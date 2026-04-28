@@ -15,6 +15,7 @@ driver_script=${DRIVER_SCRIPT:-${script_dir}/DRIVER_analysis.sh}
 driver_HybridVar_script=${DRIVER_HYBRIDVAR_SCRIPT:-${script_dir}/DRIVER_HybridVar_analysis.sh}
 lockfiles_acquired=()
 ensemble_size=${ENSEMBLE_SIZE:-30}
+run_branch_selection=${RUN_BRANCH:-${RUN_BRNACH:-HybridVar}}
 
 source "${script_dir}/scripts/driver_analysis_common.sh"
 
@@ -274,6 +275,20 @@ run_branch() {
 }
 
 rc=0
-run_branch "GETKF" "${baserundir}" "${cycle_history}" "${lockfile}" "${status_file}" "${driver_script}" || rc=1
-run_branch "HybridVar" "${HybridVar_baserundir}" "${HybridVar_cycle_history}" "${HybridVar_lockfile}" "${HybridVar_status_file}" "${driver_HybridVar_script}" || rc=1
+case "${run_branch_selection}" in
+    GETKF|getkf|ENKF|enkf)
+        run_branch "GETKF" "${baserundir}" "${cycle_history}" "${lockfile}" "${status_file}" "${driver_script}" || rc=1
+        ;;
+    HybridVar|hybridvar|HYBRIDVAR|hybrid|HYBRID)
+        run_branch "HybridVar" "${HybridVar_baserundir}" "${HybridVar_cycle_history}" "${HybridVar_lockfile}" "${HybridVar_status_file}" "${driver_HybridVar_script}" || rc=1
+        ;;
+    both|BOTH|all|ALL)
+        run_branch "GETKF" "${baserundir}" "${cycle_history}" "${lockfile}" "${status_file}" "${driver_script}" || rc=1
+        run_branch "HybridVar" "${HybridVar_baserundir}" "${HybridVar_cycle_history}" "${HybridVar_lockfile}" "${HybridVar_status_file}" "${driver_HybridVar_script}" || rc=1
+        ;;
+    *)
+        echo "ERROR: RUN_BRANCH must be one of: GETKF, HybridVar, both" >&2
+        exit 1
+        ;;
+esac
 exit "${rc}"
