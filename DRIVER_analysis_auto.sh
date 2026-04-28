@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -euo pipefail
 rrfspath=${RRFSPATH:-/lfs/h1/ops/para/com/rrfs/v1.0}
 baserundir=${BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/GETKF_PARALLEL}
 HybridVar_baserundir=${HybridVar_BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL}
