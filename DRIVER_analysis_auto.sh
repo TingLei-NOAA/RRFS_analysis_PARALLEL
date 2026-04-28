@@ -1,13 +1,16 @@
 #!/bin/bash
 
 rrfspath=${RRFSPATH:-/lfs/h1/ops/para/com/rrfs/v1.0}
-baserundir=${BASERUNDIR:-/lfs/h2/emc/stmp/samuel.degelia/GETKF_PARALLEL}
+baserundir=${BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/GETKF_PARALLEL}
+HybridVar_baserundir=${HybridVar_BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL}
 lockfile=${LOCKFILE:-${baserundir}/.enspath_lock}
 cycle_history=${baserundir}/.enspath_cycle_history.txt
+HybridVar_cycle_history=${HybridVar_baserundir}/.enspath_cycle_history.txt
 timestamp=$(date -u +%Y%m%d%H%M%S)
-status_file=${baserundir}/monitor_enspath_${timestamp}.status
+status_file=${HybridVar_baserundir}/monitor_enspath_${timestamp}.status
 script_dir=$(cd "$(dirname "$0")" && pwd)
 driver_script=${DRIVER_SCRIPT:-${script_dir}/DRIVER_analysis.sh}
+driver_HybridVar_script=${DRIVER_SCRIPT:-${script_dir}/DRIVER_HybridVar_analysis.sh}
 lock_acquired=0
 ensemble_size=${ENSEMBLE_SIZE:-30}
 
@@ -17,8 +20,16 @@ if ! mkdir -p "${baserundir}"; then
     echo "ERROR: Unable to create baserundir: ${baserundir}" >&2
     exit 1
 fi
+if ! mkdir -p "${HybridVar_baserundir}"; then
+    echo "ERROR: Unable to create baserundir: ${HybridVar_baserundir}" >&2
+    exit 1
+fi
 if ! touch "${cycle_history}"; then
     echo "ERROR: Unable to initialize cycle history file: ${cycle_history}" >&2
+    exit 1
+fi
+if ! touch "${HybridVar_cycle_history}"; then
+    echo "ERROR: Unable to initialize cycle history file: ${HybridVar_cycle_history}" >&2
     exit 1
 fi
 if ! [[ "${ensemble_size}" =~ ^[0-9]+$ ]] || [[ "${ensemble_size}" -lt 1 ]]; then
