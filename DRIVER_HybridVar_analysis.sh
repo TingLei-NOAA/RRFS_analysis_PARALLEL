@@ -199,7 +199,7 @@ job2=$(bash "${submit}" \
 # Run the GETKF analysis after both upstream jobs complete successfully
 #    -W "depend=afterok:${job1}:${job2}" \
 #    
-if [ 1 -gt  0 ];
+if [ 1 -gt  0 ]; then
 job3=$(bash "${submit}" \
     -N "${GETKF_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \

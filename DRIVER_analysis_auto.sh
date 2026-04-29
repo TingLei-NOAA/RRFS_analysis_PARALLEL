@@ -1,4 +1,10 @@
 #!/bin/bash
+#clt 
+# echo "2024052623 SUCCESS manual_start" > /lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL/.enspath_cycle_history.txt
+# the above file is to be used to laucn new cycles
+
+
+set -x
 set -euo pipefail
 rrfspath=${RRFSPATH:-/lfs/h1/ops/para/com/rrfs/v1.0}
 baserundir=${BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/GETKF_PARALLEL}
@@ -261,7 +267,7 @@ run_branch() {
     fi
 
     log "${branch_status_file}" "${branch_name}" "Starting ${branch_driver_script} for cycle ${next_cycle}"
-    if "${branch_driver_script}" "${next_enspath}" >> "${branch_status_file}" 2>&1; then
+    if bash -x  "${branch_driver_script}" "${next_enspath}" >> "${branch_status_file}" 2>&1; then
         log "${branch_status_file}" "${branch_name}" "DRIVER completed successfully for cycle ${next_cycle}"
         record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "SUCCESS"
         release_lock "${branch_lockfile}"
