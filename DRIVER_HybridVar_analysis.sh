@@ -18,7 +18,7 @@ baserundir=/lfs/h2/emc/stmp/${USER}/3DVarAnalysis_PARALLEL
 # GETKF config
 getkfyaml=/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
 #
-hybrid3dVar_yaml=XXXX/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
+hybridVaryaml=xxx/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
 
 # Paths to RRFS ensemble and observations in realtime (wont change)
 rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
@@ -141,6 +141,7 @@ mrmsdir='${mrmsdir}'
 anldir='${anldir}'
 HybridVaranldir='${anldir}'
 verifdir='${verifdir}'
+HybridVaryaml='${HybridVaryaml}'
 getkfyaml='${getkfyaml}'
 fixsimple='${fixsimple}'
 EOF
