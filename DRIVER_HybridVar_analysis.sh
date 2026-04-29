@@ -18,7 +18,7 @@ baserundir=/lfs/h2/emc/stmp/${USER}/3DVarAnalysis_PARALLEL
 # GETKF config
 getkfyaml=/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
 #
-hybridVaryaml=xxx/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
+HybridVaryaml=xxx/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
 
 # Paths to RRFS ensemble and observations in realtime (wont change)
 rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
@@ -76,7 +76,7 @@ HybridVar_JOB_NAME="na3km_hybrid"
 HybridVar_SELECT="62:mpiprocs=128:ompthreads=1:ncpus=128"
 Hybrid_WALLTIME="01:00:00"
 HybridVar_PLACE="vscatter"
-GETKF_LOG="HybridVar.log"
+HybridVar_LOG="HybridVar.log"
 
 # GSI verification
 VERIF_JOB_NAME="na3km_verif"
@@ -200,21 +200,7 @@ job2=$(bash "${submit}" \
 # Run the GETKF analysis after both upstream jobs complete successfully
 #    -W "depend=afterok:${job1}:${job2}" \
 #    
-if [ 1 -gt  0 ]; then
 job3=$(bash "${submit}" \
-    -N "${GETKF_JOB_NAME}" \
-    -A "${PBS_ACCOUNT}" \
-    -q "${PBS_QUEUE}" \
-    -l "select=${GETKF_SELECT}" \
-    -l "walltime=${GETKF_WALLTIME}" \
-    -l "place=${GETKF_PLACE}" \
-    -o "${GETKF_LOG}" \
-    -v "envfile=${envfile}" \
-    -v "PBS_NP=${GETKF_PBS_NP},PBS_NUM_NODES=${GETKF_PBS_NUM_NODES}" \
-    -W "depend=afterok:${job1}:${job2}" \
-    "${script_dir}/scripts/exrrfs_analysis_enkf_jedi.sh")
-fi 
-job3v1=$(bash "${submit}" \
     -N "${HybridVar_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
     -q "${PBS_QUEUE}" \
