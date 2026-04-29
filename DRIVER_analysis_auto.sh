@@ -1,8 +1,30 @@
 #!/bin/bash
-#clt 
-# echo "2024052623 SUCCESS manual_start" > /lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL/.enspath_cycle_history.txt
-# the above file is to be used to laucn new cycles
-
+#
+# Automated RRFS analysis launcher for regular Rocoto/cron-style polling.
+#
+# Each invocation checks the upstream RRFS ensemble restart tree for the next
+# complete cycle and launches one analysis branch. Branch selection is controlled
+# by RUN_BRANCH, with default RUN_BRANCH=HybridVar. Valid values are GETKF,
+# HybridVar, or both. RUN_BRNACH is also accepted as a spelling alias.
+#
+# GETKF and HybridVar are managed independently. Each branch has its own base
+# run directory, cycle history file, lock file, monitor log, and driver script.
+# A SUCCESS entry in that branch's history advances it to the next hourly cycle.
+# A FAILED entry does not count as processed, so the same cycle is retried on
+# the next invocation.
+#
+# The per-invocation monitor log is written as:
+#
+#   ${branch_baserundir}/monitor_enspath_${timestamp}.status
+#
+# The monitor log records this wrapper's decisions and receives stdout/stderr
+# from the branch driver script.
+#
+# To force a branch to begin at a target cycle, write the previous cycle as a
+# SUCCESS entry in that branch's history file. Example for HybridVar beginning
+# at 2024052700:
+#
+#   echo "2024052623 SUCCESS manual_start" > /lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL/.enspath_cycle_history.txt
 
 set -x
 set -euo pipefail
@@ -241,9 +263,10 @@ run_branch() {
     if ! initialize_branch "${branch_name}" "${branch_baserundir}" "${branch_cycle_history}"; then
         return 1
     fi
+    log "${branch_status_file}" "${branch_name}" "Monitor log for this invocation: ${branch_status_file}"
 
     if [[ ! -x "${branch_driver_script}" ]]; then
-        log "${branch_status_file}" "${branch_name}" "ERROR: DRIVER script not found or not executable: ${branch_driver_script}"
+        log "${branch_status_file}" "${branch_name}" "ERROR: DRIVER script not found or not executable: ${branch_driver_script}; see monitor log ${branch_status_file}"
         return 1
     fi
 
@@ -266,15 +289,15 @@ run_branch() {
         return 0
     fi
 
-    log "${branch_status_file}" "${branch_name}" "Starting ${branch_driver_script} for cycle ${next_cycle}"
-    if bash -x  "${branch_driver_script}" "${next_enspath}" >> "${branch_status_file}" 2>&1; then
-        log "${branch_status_file}" "${branch_name}" "DRIVER completed successfully for cycle ${next_cycle}"
+    log "${branch_status_file}" "${branch_name}" "Starting ${branch_driver_script} for cycle ${next_cycle}; driver output will be appended to ${branch_status_file}"
+    if bash -x "${branch_driver_script}" "${next_enspath}" >> "${branch_status_file}" 2>&1; then
+        log "${branch_status_file}" "${branch_name}" "DRIVER completed successfully for cycle ${next_cycle}; see monitor log ${branch_status_file}"
         record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "SUCCESS"
         release_lock "${branch_lockfile}"
         return 0
     fi
 
-    log "${branch_status_file}" "${branch_name}" "DRIVER failed for cycle ${next_cycle}; leaving cycle unprocessed for retry."
+    log "${branch_status_file}" "${branch_name}" "DRIVER failed for cycle ${next_cycle}; leaving cycle unprocessed for retry. Driver output is in ${branch_status_file}"
     record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "FAILED"
     release_lock "${branch_lockfile}"
     return 1
