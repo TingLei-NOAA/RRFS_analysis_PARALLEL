@@ -203,6 +203,43 @@ validate_restart_files() {
     return 0
 }
 
+validate_control_restart_files() {
+    local controlpath="$1"
+    local status_file="${2:-/dev/null}"
+    local branch_name="${3:-VALIDATE}"
+    local restart_dir
+    local suffix
+    local file
+    local missing=0
+
+    if ! compute_valid_cycle_from_enspath "${controlpath}"; then
+        log "${status_file}" "${branch_name}" "ERROR: invalid cycle parsed from control path: ${controlpath}"
+        return 1
+    fi
+
+    restart_prefix="${VALID_RESTART_PREFIX}"
+    restart_dir="${controlpath}/forecast/RESTART"
+    log "${status_file}" "${branch_name}" "Validating control restart files for ${controlpath} (prefix ${restart_prefix})"
+
+    if [[ ! -d "${restart_dir}" ]]; then
+        log "${status_file}" "${branch_name}" "MISSING: ${restart_dir}"
+        return 1
+    fi
+
+    for suffix in "${required_suffixes[@]}"; do
+        file="${restart_dir}/${restart_prefix}.${suffix}"
+        if [[ ! -f "${file}" ]]; then
+            log "${status_file}" "${branch_name}" "MISSING: ${file}"
+            missing=1
+        fi
+    done
+
+    if [[ "${missing}" -ne 0 ]]; then
+        return 1
+    fi
+    return 0
+}
+
 acquire_lock() {
     local lockfile="$1"
     local cycle="$2"
@@ -260,6 +297,7 @@ run_branch() {
     local branch_driver_script="$6"
     local next_cycle
     local next_enspath
+    local controlpath
 
     if ! initialize_branch "${branch_name}" "${branch_baserundir}" "${branch_cycle_history}"; then
         return 1
@@ -285,6 +323,15 @@ run_branch() {
         return 0
     fi
     log "${branch_status_file}" "${branch_name}" "All required files are present for cycle ${next_cycle}"
+
+    if [[ "${branch_name}" == "HybridVar" ]]; then
+        controlpath="${rrfspath}/rrfs.${next_cycle:0:8}/${next_cycle:8:2}"
+        if ! validate_control_restart_files "${controlpath}" "${branch_status_file}" "${branch_name}"; then
+            log "${branch_status_file}" "${branch_name}" "Control forecast restart files are not complete yet for cycle ${next_cycle}. Will retry on next run."
+            return 0
+        fi
+        log "${branch_status_file}" "${branch_name}" "All required control forecast files are present for cycle ${next_cycle}"
+    fi
 
     if ! acquire_lock "${branch_lockfile}" "${next_cycle}" "${branch_status_file}" "${branch_name}"; then
         return 0
