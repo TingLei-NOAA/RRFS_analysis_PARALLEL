@@ -113,9 +113,8 @@ DD=${VALID_DD}
 obspath=${obsbase}/rrfs.${YYYYMMDD}
 bufrdir=${baserundir}/bufr.${YYYYMMDD}${HH}
 mrmsdir=${baserundir}/mrms.${YYYYMMDD}${HH}
-anldir=${baserundir}/getkf.${YYYYMMDD}${HH}
-HybridVaranldir=${baserundir}/HybridVar.${YYYYMMDD}${HH}
-verifdir=${baserundir}/verif.${YYYYMMDD}${HH}
+anldir=${baserundir}/HybridVar.${YYYYMMDD}${HH}
+verifdir=${baserundir}/HybridVar_verif.${YYYYMMDD}${HH}
 currdir=`pwd`
 fixsimple=${currdir}/fix
 if [ ! -d ./logs ]; then
@@ -123,7 +122,7 @@ if [ ! -d ./logs ]; then
 fi
 
 # Export the variables we will need in other tasks
-envfile=getkf_run.env
+envfile=HybridVar_run.env
 cat > ${envfile} << EOF
 RDASApp='${RDASApp}'
 rrfsworkflow='${rrfsworkflow}'
@@ -131,7 +130,7 @@ rrfspath='${rrfspath}'
 reflpath='${reflpath}'
 obsbase='${obsbase}'
 obspath='${obspath}'
-baserundir='${baserundir}'
+baserundir='${`baserundir}'
 enspath='${enspath}'
 HH='${HH}'
 YYYYMMDD='${YYYYMMDD}'
@@ -141,10 +140,8 @@ DD='${DD}'
 bufrdir='${bufrdir}'
 mrmsdir='${mrmsdir}'
 anldir='${anldir}'
-HybridVaranldir='${HybridVaranldir}'
 verifdir='${verifdir}'
 HybridVaryaml='${HybridVaryaml}'
-getkfyaml='${getkfyaml}'
 fixsimple='${fixsimple}'
 EOF
 
@@ -224,7 +221,7 @@ export PBS_NP=${HybridVar_PBS_NP}
 export PBS_NUM_NODES=${HybridVar_PBS_NUM_NODES}
 
 cd "${currdir}"
-exec bash "${script_dir}/scripts/exrrfs_analysis_jedi_mgbf.sh"
+exec bash "${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh"
 EOF
 chmod +x sub_hybridvar.sh
 echo "Wrote debug HybridVar PBS script: ${currdir}/sub_hybridvar.sh"
@@ -275,9 +272,6 @@ if [ -f bufr.log ]; then
 fi
 if [ -f mrms.log ]; then
     mv mrms.log logs/mrms_${YYYYMMDD}${HH}.log
-fi
-if [ -f getkf.log ]; then
-    mv getkf.log logs/getkf_${YYYYMMDD}${HH}.log
 fi
 if [ -f HybridVar.log ]; then
     mv HybridVar.log logs/HybridVar_${YYYYMMDD}${HH}.log

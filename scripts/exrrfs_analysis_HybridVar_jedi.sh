@@ -71,8 +71,6 @@ echo "thinkdeb CDATA/CDATA_M1 are "$CDATE ' ' $CDATE_M1
 CDATE_M1_ISO=$(date -u -d "${CDATE_M1:0:8} ${CDATE_M1:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
 
 
-cp  example-HybridVar.yaml  HybridVar-jedi.yaml
-sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${tCDATE_M1_ISO}|" HybridVar-jedi.yaml
 
 
 
@@ -194,6 +192,11 @@ cp ${FIX_JEDI}/field_table .
 cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/fmsmpp.nml .
 #cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/input_lam* .
 cp ${fixsimple}/input_lam* .
+cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml} example-HybridVar.yaml .
+cp ${fixsimple}/dr-mgbf/norm-sdl_vdl-1G_v1_init-p1936.nml .
+ln -sf ${fixsimple}/dr-mgbf/dr-nomr*var .
+cp  example-HybridVar.yaml  HybridVar-jedi.yaml
+sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${tCDATE_M1_ISO}|" HybridVar-jedi.yaml
 
 #
 

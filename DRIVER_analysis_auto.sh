@@ -132,6 +132,7 @@ increment_cycle() {
 cycle_exists_and_has_restarts() {
     local cycle="$1"
     local enspath="${rrfspath}/enkfrrfs.${cycle:0:8}/${cycle:8:2}"
+thinkdeb for control    /rrfs.20260427/
     [[ -d "${enspath}" ]] || return 1
     validate_restart_files "${enspath}" >/dev/null
 }
