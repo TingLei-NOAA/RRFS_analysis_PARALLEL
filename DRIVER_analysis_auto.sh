@@ -26,8 +26,11 @@
 #
 #   echo "2024052623 SUCCESS manual_start" > /lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL/.enspath_cycle_history.txt
 
-set -x
 set -euo pipefail
+if [[ "${TRACE_AUTO:-FALSE}" == "TRUE" ]]; then
+    PS4='+ ${BASH_SOURCE}:${LINENO}: '
+    set -x
+fi
 rrfspath=${RRFSPATH:-/lfs/h1/ops/para/com/rrfs/v1.0}
 baserundir=${BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/GETKF_PARALLEL}
 HybridVar_baserundir=${HybridVar_BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL}
@@ -298,6 +301,7 @@ run_branch() {
     local next_cycle
     local next_enspath
     local controlpath
+    local -a driver_cmd
 
     if ! initialize_branch "${branch_name}" "${branch_baserundir}" "${branch_cycle_history}"; then
         return 1
@@ -338,7 +342,13 @@ run_branch() {
     fi
 
     log "${branch_status_file}" "${branch_name}" "Starting ${branch_driver_script} for cycle ${next_cycle}; driver output will be appended to ${branch_status_file}"
-    if bash -x "${branch_driver_script}" "${next_enspath}" >> "${branch_status_file}" 2>&1; then
+    if [[ "${TRACE_DRIVER:-FALSE}" == "TRUE" ]]; then
+        driver_cmd=(bash -x "${branch_driver_script}" "${next_enspath}")
+    else
+        driver_cmd=(bash "${branch_driver_script}" "${next_enspath}")
+    fi
+
+    if "${driver_cmd[@]}" >> "${branch_status_file}" 2>&1; then
         log "${branch_status_file}" "${branch_name}" "DRIVER completed successfully for cycle ${next_cycle}; see monitor log ${branch_status_file}"
         record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "SUCCESS"
         release_lock "${branch_lockfile}"

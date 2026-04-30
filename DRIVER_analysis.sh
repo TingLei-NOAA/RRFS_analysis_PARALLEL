@@ -218,6 +218,13 @@ job4=$(bash "${submit}" \
 echo "Submitted jobs: radar=${job1} bufr=${job2} getkf=${job3} verif=${job4}"
 
 # Wait for all jobs to complete
+xtrace_was_on=0
+case "$-" in
+  *x*)
+    xtrace_was_on=1
+    set +x
+    ;;
+esac
 while qstat_output=$(qstat "${job1}" "${job2}" "${job3}" "${job4}" 2>/dev/null || true); do
     if [[ "${qstat_output}" != *"${job1}"* && \
           "${qstat_output}" != *"${job2}"* && \
@@ -227,6 +234,9 @@ while qstat_output=$(qstat "${job1}" "${job2}" "${job3}" "${job4}" 2>/dev/null |
     fi
     sleep 10
 done
+if [[ "${xtrace_was_on}" -eq 1 ]]; then
+    set -x
+fi
 
 if [ -f bufr.log ]; then
     mv bufr.log logs/bufr_${YYYYMMDD}${HH}.log

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # This script grabs the real-time background ensemble from RRFSv1 and runs a JEDI-based GETKF analysis every hour
 # Tasks include:
@@ -42,6 +43,22 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 source "${script_dir}/scripts/driver_analysis_common.sh"
 submit="${script_dir}/scripts/submit_job.sh"
 
+submit_job_or_exit() {
+    local desc="$1"
+    shift
+    local jobid
+
+    if ! jobid=$(bash "${submit}" "$@"); then
+        echo "ERROR: failed to submit ${desc}" >&2
+        exit 1
+    fi
+    if [[ -z "${jobid}" ]]; then
+        echo "ERROR: ${desc} submission returned an empty job ID" >&2
+        exit 1
+    fi
+    echo "${jobid}"
+}
+
 # -----------------------------------------------------------------------
 # Per-task PBS resource settings.
 # Override any of these environment variables before calling this script
@@ -55,7 +72,7 @@ PBS_QUEUE="dev"
 RADAR_JOB_NAME="na3km_process_radarref"
 RADAR_SELECT="1:mpiprocs=64:ncpus=64"
 RADAR_WALLTIME="00:25:00"
-RADAR_PALCE="excl"
+RADAR_PLACE="excl"
 RADAR_LOG="mrms.log"
 
 # BUFR to IODA conversion
@@ -171,7 +188,7 @@ cp ./scripts/prep_phydata_dbz.py ${anldir}
 cp ./scripts/apply_jedi_incs.sh ${verifdir}
 
 # Create radar observations
-job1=$(bash "${submit}" \
+job1=$(submit_job_or_exit "radar processing job" \
     -N "${RADAR_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
     -q "${PBS_QUEUE}" \
@@ -184,7 +201,7 @@ job1=$(bash "${submit}" \
     "${script_dir}/scripts/exrrfs_process_radar.sh")
 
 # Convert prepbufr observations to IODA
-job2=$(bash "${submit}" \
+job2=$(submit_job_or_exit "BUFR to IODA job" \
     -N "${BUFR_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
     -q "${PBS_QUEUE}" \
@@ -226,7 +243,7 @@ EOF
 chmod +x sub_hybridvar.sh
 echo "Wrote debug HybridVar PBS script: ${currdir}/sub_hybridvar.sh"
 
-job3=$(bash "${submit}" \
+job3=$(submit_job_or_exit "HybridVar analysis job" \
     -N "${HybridVar_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
     -q "${PBS_QUEUE}" \
@@ -237,10 +254,10 @@ job3=$(bash "${submit}" \
     -v "envfile=${envfile}" \
     -v "PBS_NP=${HybridVar_PBS_NP},PBS_NUM_NODES=${HybridVar_PBS_NUM_NODES}" \
     -W "depend=afterok:${job1}:${job2}" \
-    "${script_dir}/scripts/exrrfs_analysis_jedi_mgbf.sh")
+    "${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh")
 
 # Run the verification after the GETKF job completes successfully
-job4=$(bash "${submit}" \
+job4=$(submit_job_or_exit "GSI verification job" \
     -N "${VERIF_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
     -q "${PBS_QUEUE}" \
@@ -257,6 +274,13 @@ job4=$(bash "${submit}" \
 echo "Submitted jobs: radar=${job1} bufr=${job2} HybridVar=${job3} verif=${job4}"
 
 # Wait for all jobs to complete
+xtrace_was_on=0
+case "$-" in
+  *x*)
+    xtrace_was_on=1
+    set +x
+    ;;
+esac
 while qstat_output=$(qstat "${job1}" "${job2}" "${job3}" "${job4}" 2>/dev/null || true); do
     if [[ "${qstat_output}" != *"${job1}"* && \
           "${qstat_output}" != *"${job2}"* && \
@@ -266,6 +290,9 @@ while qstat_output=$(qstat "${job1}" "${job2}" "${job3}" "${job4}" 2>/dev/null |
     fi
     sleep 10
 done
+if [[ "${xtrace_was_on}" -eq 1 ]]; then
+    set -x
+fi
 
 if [ -f bufr.log ]; then
     mv bufr.log logs/bufr_${YYYYMMDD}${HH}.log
