@@ -6,6 +6,8 @@
 # complete cycle and launches one analysis branch. Branch selection is controlled
 # by RUN_BRANCH, with default RUN_BRANCH=HybridVar. Valid values are GETKF,
 # HybridVar, or both. RUN_BRNACH is also accepted as a spelling alias.
+# Set FORCE_CLEAN_LOCKS=TRUE to remove the selected branch lock file(s) and exit
+# without launching any branch.
 #
 # GETKF and HybridVar are managed independently. Each branch has its own base
 # run directory, cycle history file, lock file, monitor log, and driver script.
@@ -25,6 +27,12 @@
 # at 2024052700:
 #
 #   echo "2024052623 SUCCESS manual_start" > /lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL/.enspath_cycle_history.txt
+#
+# To remove lock files without launching new work:
+#
+#   FORCE_CLEAN_LOCKS=TRUE RUN_BRANCH=HybridVar ./DRIVER_analysis_auto.sh
+#   FORCE_CLEAN_LOCKS=TRUE RUN_BRANCH=GETKF ./DRIVER_analysis_auto.sh
+#   FORCE_CLEAN_LOCKS=TRUE RUN_BRANCH=both ./DRIVER_analysis_auto.sh
 
 set -euo pipefail
 if [[ "${TRACE_AUTO:-FALSE}" == "TRUE" ]]; then
@@ -93,6 +101,38 @@ cleanup_locks() {
     done
 }
 trap cleanup_locks EXIT INT TERM
+
+force_clean_lock() {
+    local branch_name="$1"
+    local lockfile="$2"
+
+    if [[ -f "${lockfile}" ]]; then
+        echo "[${branch_name}] Removing lock file: ${lockfile}"
+        cat "${lockfile}"
+        rm -f "${lockfile}"
+    else
+        echo "[${branch_name}] No lock file found: ${lockfile}"
+    fi
+}
+
+force_clean_selected_locks() {
+    case "${run_branch_selection}" in
+        GETKF|getkf|ENKF|enkf)
+            force_clean_lock "GETKF" "${lockfile}"
+            ;;
+        HybridVar|hybridvar|HYBRIDVAR|hybrid|HYBRID)
+            force_clean_lock "HybridVar" "${HybridVar_lockfile}"
+            ;;
+        both|BOTH|all|ALL)
+            force_clean_lock "GETKF" "${lockfile}"
+            force_clean_lock "HybridVar" "${HybridVar_lockfile}"
+            ;;
+        *)
+            echo "ERROR: RUN_BRANCH must be one of: GETKF, HybridVar, both" >&2
+            exit 1
+            ;;
+    esac
+}
 
 lock_is_active() {
     local lockfile="$1"
@@ -361,6 +401,11 @@ run_branch() {
 }
 
 rc=0
+if [[ "${FORCE_CLEAN_LOCKS:-FALSE}" == "TRUE" ]]; then
+    force_clean_selected_locks
+    exit 0
+fi
+
 case "${run_branch_selection}" in
     GETKF|getkf|ENKF|enkf)
         run_branch "GETKF" "${baserundir}" "${cycle_history}" "${lockfile}" "${status_file}" "${driver_script}" || rc=1
