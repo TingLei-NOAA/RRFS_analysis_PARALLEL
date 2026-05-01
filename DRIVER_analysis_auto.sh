@@ -346,6 +346,7 @@ run_branch() {
         return 1
     fi
     log "${branch_status_file}" "${branch_name}" "Monitor log for this invocation: ${branch_status_file}"
+    log "${branch_status_file}" "${branch_name}" "Auto wrapper working directory: $(pwd)"
 
     if [[ ! -x "${branch_driver_script}" ]]; then
         log "${branch_status_file}" "${branch_name}" "ERROR: DRIVER script not found or not executable: ${branch_driver_script}; see monitor log ${branch_status_file}"

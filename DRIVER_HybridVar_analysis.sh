@@ -133,6 +133,7 @@ mrmsdir=${baserundir}/mrms.${YYYYMMDD}${HH}
 anldir=${baserundir}/HybridVar.${YYYYMMDD}${HH}
 verifdir=${baserundir}/HybridVar_verif.${YYYYMMDD}${HH}
 currdir=`pwd`
+echo "DRIVER_HybridVar_analysis.sh working directory: ${currdir}"
 fixsimple=${currdir}/fix
 if [ ! -d ./logs ]; then
   mkdir -p logs
@@ -147,7 +148,7 @@ rrfspath='${rrfspath}'
 reflpath='${reflpath}'
 obsbase='${obsbase}'
 obspath='${obspath}'
-baserundir='${`baserundir}'
+baserundir='${baserundir}'
 enspath='${enspath}'
 HH='${HH}'
 YYYYMMDD='${YYYYMMDD}'
