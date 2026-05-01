@@ -113,14 +113,14 @@ PBS_QUEUE="dev"
 # Radar reflectivity processing
 RADAR_JOB_NAME="na3km_process_radarref"
 RADAR_SELECT="1:mpiprocs=64:ncpus=64"
-RADAR_WALLTIME="00:25:00"
+RADAR_WALLTIME="01:25:00"
 RADAR_PLACE="excl"
 RADAR_LOG="mrms.log"
 
 # BUFR to IODA conversion
 BUFR_JOB_NAME="na3km_ioda_bufr"
 BUFR_SELECT="1:mpiprocs=1:ncpus=1:mem=20G"
-BUFR_WALLTIME="00:20:00"
+BUFR_WALLTIME="01:20:00"
 BUFR_PLACE="excl"
 BUFR_LOG="bufr.log"
 

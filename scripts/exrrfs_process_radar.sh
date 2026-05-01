@@ -223,6 +223,9 @@ EOF
    # pyioda libraries
    set +x
    module purge
+   #cltorg
+   RDASAPP_DIR=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp #thinkdeb
+   RDASAPP=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp  #cltthinkdeb
    module use "${RDASApp}"/modulefiles
    module load RDAS/wcoss2.intel
    set -euox pipefail
