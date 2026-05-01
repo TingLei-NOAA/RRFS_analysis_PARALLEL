@@ -61,6 +61,46 @@ submit_job_or_exit() {
     echo "${jobid}"
 }
 
+check_pbs_job_success() {
+    local label="$1"
+    local jobid="$2"
+    local qstat_output
+    local exit_status
+    local job_state
+    local comment
+    local output_path
+    local error_path
+
+    qstat_output=$(qstat -x -f "${jobid}" 2>/dev/null || qstat -H -f "${jobid}" 2>/dev/null || true)
+    exit_status=$(awk -F= '/Exit_status/ {gsub(/[[:space:]]/, "", $2); print $2; exit}' <<< "${qstat_output}")
+    job_state=$(awk -F= '/job_state/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' <<< "${qstat_output}")
+    comment=$(awk -F= '/comment/ {sub(/^[[:space:]]*comment[[:space:]]*=[[:space:]]*/, ""); print; exit}' <<< "${qstat_output}")
+    output_path=$(awk -F= '/Output_Path/ {sub(/^[[:space:]]*Output_Path[[:space:]]*=[[:space:]]*/, ""); print; exit}' <<< "${qstat_output}")
+    error_path=$(awk -F= '/Error_Path/ {sub(/^[[:space:]]*Error_Path[[:space:]]*=[[:space:]]*/, ""); print; exit}' <<< "${qstat_output}")
+
+    if [[ -z "${exit_status}" ]]; then
+        echo "ERROR: Could not determine PBS Exit_status for ${label} job ${jobid}" >&2
+        echo "  job_state=${job_state:-UNKNOWN}" >&2
+        echo "  comment=${comment:-NONE}" >&2
+        echo "  Output_Path=${output_path:-UNKNOWN}" >&2
+        echo "  Error_Path=${error_path:-UNKNOWN}" >&2
+        return 1
+    fi
+
+    if [[ "${exit_status}" != "0" ]]; then
+        echo "ERROR: ${label} job ${jobid} failed with Exit_status=${exit_status}" >&2
+        echo "  job_state=${job_state:-UNKNOWN}" >&2
+        echo "  comment=${comment:-NONE}" >&2
+        echo "  Output_Path=${output_path:-UNKNOWN}" >&2
+        echo "  Error_Path=${error_path:-UNKNOWN}" >&2
+        return 1
+    fi
+
+    echo "SUCCESS: ${label} job ${jobid} completed with Exit_status=0"
+    echo "  Output_Path=${output_path:-UNKNOWN}"
+    return 0
+}
+
 # -----------------------------------------------------------------------
 # Per-task PBS resource settings.
 # Override any of these environment variables before calling this script
@@ -347,6 +387,11 @@ done
 if [[ "${xtrace_was_on}" -eq 1 ]]; then
     set -x
 fi
+
+check_pbs_job_success "radar" "${job1}"
+check_pbs_job_success "bufr" "${job2}"
+check_pbs_job_success "HybridVar" "${job3}"
+check_pbs_job_success "verif" "${job4}"
 
 echo "HybridVar driver finished waiting for submitted jobs."
 echo "Cycle logs are in: ${cycle_logdir}"
