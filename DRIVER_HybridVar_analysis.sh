@@ -331,8 +331,7 @@ echo "Submitting HybridVar analysis task: ${script_dir}/scripts/exrrfs_analysis_
 echo "  PBS stdout/stderr: ${HybridVar_LOG}"
 echo "  Task work directory after cd: ${anldir}"
 echo "  Task internal pgmout: ${anldir}/pgm.log"
-echo "ls log dir " 
-ls -l $cycle_logdir
+echo "  Dependency: afterok:${job1}:${job2}"
 job3=$(submit_job_or_exit "HybridVar analysis job" \
     -N "${HybridVar_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
@@ -345,12 +344,13 @@ job3=$(submit_job_or_exit "HybridVar analysis job" \
     -v "PBS_NP=${HybridVar_PBS_NP},PBS_NUM_NODES=${HybridVar_PBS_NUM_NODES}" \
     -W "depend=afterok:${job1}:${job2}" \
     "${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh")
-wait 10
-echo "thinkdeb after finish job3 " $job3
+echo "Submitted HybridVar analysis job: ${job3}"
+echo "HybridVar PBS log will appear after the job starts: ${HybridVar_LOG}"
 
 # Run the verification after the GETKF job completes successfully
 echo "Submitting GSI verification task: ${script_dir}/scripts/exrrfs_analysis_gsi.sh"
 echo "  PBS stdout/stderr: ${VERIF_LOG}"
+echo "  Dependency: afterok:${job3}"
 job4=$(submit_job_or_exit "GSI verification job" \
     -N "${VERIF_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
@@ -363,6 +363,8 @@ job4=$(submit_job_or_exit "GSI verification job" \
     -v "PBS_NP=${VERIF_PBS_NP},PBS_NUM_NODES=${VERIF_PBS_NUM_NODES}" \
     -W "depend=afterok:${job3}" \
     "${script_dir}/scripts/exrrfs_analysis_gsi.sh")
+echo "Submitted GSI verification job: ${job4}"
+echo "GSI verification PBS log will appear after the job starts: ${VERIF_LOG}"
 
 #cltorg echo "Submitted jobs: radar=${job1} bufr=${job2} getkf=${job3} verif=${job4}"
 echo "Submitted jobs: radar=${job1} bufr=${job2} HybridVar=${job3} verif=${job4}"
