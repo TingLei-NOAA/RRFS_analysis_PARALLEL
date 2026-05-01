@@ -339,6 +339,7 @@ run_branch() {
     local branch_driver_script="$6"
     local next_cycle
     local next_enspath
+    local next_controlpath
     local controlpath
     local -a driver_cmd
 
@@ -369,8 +370,8 @@ run_branch() {
     log "${branch_status_file}" "${branch_name}" "All required files are present for cycle ${next_cycle}"
 
     if [[ "${branch_name}" == "HybridVar" ]]; then
-        controlpath="${rrfspath}/rrfs.${next_cycle:0:8}/${next_cycle:8:2}"
-        if ! validate_control_restart_files "${controlpath}" "${branch_status_file}" "${branch_name}"; then
+        next_controlpath="${rrfspath}/rrfs.${next_cycle:0:8}/${next_cycle:8:2}"
+        if ! validate_control_restart_files "${next_controlpath}" "${branch_status_file}" "${branch_name}"; then
             log "${branch_status_file}" "${branch_name}" "Control forecast restart files are not complete yet for cycle ${next_cycle}. Will retry on next run."
             return 0
         fi
@@ -383,9 +384,9 @@ run_branch() {
 
     log "${branch_status_file}" "${branch_name}" "Starting ${branch_driver_script} for cycle ${next_cycle}; driver output will be appended to ${branch_status_file}"
     if [[ "${TRACE_DRIVER:-FALSE}" == "TRUE" ]]; then
-        driver_cmd=(bash -x "${branch_driver_script}" "${next_enspath}")
+        driver_cmd=(bash -x "${branch_driver_script}" "${next_enspath}" "${next_controlpath}")
     else
-        driver_cmd=(bash "${branch_driver_script}" "${next_enspath}")
+        driver_cmd=(bash "${branch_driver_script}" "${next_enspath}"  "${next_controlpath}")
     fi
 
     if "${driver_cmd[@]}" >> "${branch_status_file}" 2>&1; then

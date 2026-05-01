@@ -23,6 +23,7 @@ pgmout=${bufrdir}/pgm.log
 
 cd ${bufrdir}
 set +x
+module purge
 source ${rrfsworkflow}/versions/run.ver
 module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
 module load run_ioda_bufr.local
@@ -152,7 +153,9 @@ cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/bufr2ioda_gsrcsr.py .
 
 # generate a JSON w CDATE from the template and convert to IODA
 cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/gen_bufr2ioda_json.py .
-
+which python
+python -V 
+python3 -V 
 # ADPUPA (surface pressure)
 cp -p ${FIX_JEDI}/ioda_empty.nc ioda_adpupa.nc
 ./gen_bufr2ioda_json.py -t bufr2ioda_adpupa_prepbufr.json -o bufr2ioda_adpupa_prepbufr_0.json

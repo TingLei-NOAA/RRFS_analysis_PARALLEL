@@ -30,11 +30,13 @@ obsbase=/lfs/h1/ops/prod/com/obsproc/v1.2
 ### Begin executable code ###
 #############################
 
-if [[ -z "${1:-}" ]]; then
-    echo "Usage: $0 <enspath>"
+if [[ $# -lt 2 ]]; then
+    echo "Usage: $0 <enspath> <controlpath>"
     exit 1
 fi
+
 enspath="$1"
+controlpath="$2"
 if [[ ! -d "${enspath}" ]]; then
     echo "ERROR: enspath does not exist: ${enspath}"
     exit 1
@@ -153,6 +155,7 @@ obsbase='${obsbase}'
 obspath='${obspath}'
 baserundir='${baserundir}'
 enspath='${enspath}'
+controlpath='${controlpath}'
 HH='${HH}'
 YYYYMMDD='${YYYYMMDD}'
 YYYY='${YYYY}'
@@ -288,6 +291,8 @@ echo "Submitting HybridVar analysis task: ${script_dir}/scripts/exrrfs_analysis_
 echo "  PBS stdout/stderr: ${HybridVar_LOG}"
 echo "  Task work directory after cd: ${anldir}"
 echo "  Task internal pgmout: ${anldir}/pgm.log"
+echo "ls log dir " 
+ls -l $cycle_logdir
 job3=$(submit_job_or_exit "HybridVar analysis job" \
     -N "${HybridVar_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
@@ -300,6 +305,8 @@ job3=$(submit_job_or_exit "HybridVar analysis job" \
     -v "PBS_NP=${HybridVar_PBS_NP},PBS_NUM_NODES=${HybridVar_PBS_NUM_NODES}" \
     -W "depend=afterok:${job1}:${job2}" \
     "${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh")
+wait 10
+echo "thinkdeb after finish job3 " $job3
 
 # Run the verification after the GETKF job completes successfully
 echo "Submitting GSI verification task: ${script_dir}/scripts/exrrfs_analysis_gsi.sh"

@@ -104,6 +104,24 @@ for imem in  $(seq 1 $nens); do
   ln -snf ${bkpath}/${suffix}coupler.res                data/inputs/${memcharv0}/coupler.res
 
 done
+#-----------------------------------------------------------------------
+#
+#  link the background into run directory
+#
+#-----------------------------------------------------------------------
+#
+  mkdir -p data/inputs/bkg
+  bkpath=${controlpath}/forecast/RESTART
+  suffix=${YYYYMMDD}.${HH}0000.
+  BKTYPE=0              # warm start
+  ln -snf ${bkpath}/${suffix}fv_core.res.tile1.nc       data/inputs/bkg/fv_core.res.tile1.nc
+  ln -snf ${bkpath}/${suffix}fv_tracer.res.tile1.nc     data/inputs/bkg/fv_tracer.res.tile1.nc
+  ln -snf ${bkpath}/${suffix}sfc_data.nc                data/inputs/bkg/sfc_data.nc
+  ln -snf ${bkpath}/${suffix}phy_data.nc              data/inputs/bkg/phy_data.nc
+  ln -snf ${bkpath}/${suffix}fv_srf_wnd.res.tile1.nc    data/inputs/bkg/fv_srf_wnd.res.tile1.nc
+  ln -snf ${bkpath}/${suffix}coupler.res                data/inputs/bkg/coupler.res
+
+done
 
 #
 #-----------------------------------------------------------------------
