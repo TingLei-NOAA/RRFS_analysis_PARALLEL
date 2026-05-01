@@ -26,7 +26,9 @@ pgmout=${anldir}/pgm.log
 ### Begin executable code ###
 #############################
 
+echo "Changing to HybridVar analysis directory: ${anldir}"
 cd ${anldir}
+echo "Current working directory after cd: $(pwd)"
 set +x
 source ${rrfsworkflow}/versions/run.ver
 module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
