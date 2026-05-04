@@ -55,6 +55,7 @@ driver_HybridVar_script=${DRIVER_HYBRIDVAR_SCRIPT:-${script_dir}/DRIVER_HybridVa
 lockfiles_acquired=()
 ensemble_size=${ENSEMBLE_SIZE:-30}
 run_branch_selection=${RUN_BRANCH:-${RUN_BRNACH:-HybridVar}}
+echo RUN_BRANCH_SELECTION is $run_branch_selection
 
 source "${script_dir}/scripts/driver_analysis_common.sh"
 

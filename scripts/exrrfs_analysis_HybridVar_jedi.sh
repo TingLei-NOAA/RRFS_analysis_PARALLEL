@@ -30,15 +30,20 @@ echo "Changing to HybridVar analysis directory: ${anldir}"
 cd ${anldir}
 echo "Current working directory after cd: $(pwd)"
 set +x
-source ${rrfsworkflow}/versions/run.ver
-module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
-module load run_enkfupdt_jedi.local
+#source ${rrfsworkflow}/versions/run.ver
+#module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
+#module load run_enkfupdt_jedi.local
+moduledir="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/modulefiles"
+module use $moduledir
+module load RDAS/wcoss2.intel
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/cray/pe/mpich/8.1.19/ofi/intel/19.0/lib"
 ulimit -s unlimited
 ulimit -v unlimited
 ulimit -a
 set -euox pipefail
+jedi_bundle=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-jedi-bundle/jedi-bundle
 export OOPS_TRACE=0
-export LD_LIBRARY_PATH="${RDASAPP_DIR}/build/lib64:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${jedi_bundle}/build/lib64:${LD_LIBRARY_PATH}"
 export FI_MR_CACHE_MONITOR=memhooks
 export FI_MR_CACHE_MAX_COUNT=0
 export MPICH_ENV_DISPLAY=1
@@ -47,7 +52,7 @@ export MPICH_OFI_VERBOSE=1
 export MPICH_MPIIO_HINTS='*.tile1.nc:romio_cb_read=disable,*.sfc_data.nc:romio_cb_read=disable,*.phy_data.nc:romio_cb_read=disable,*.fv_*.res.nc:romio_cb_write=enable,*.sfc_data.nc:romio_cb_write=enable'
 export OMP_STACKSIZE=500M
 export OMP_NUM_THREADS=1 #${TPP_RUN_ANALYSIS}
-APRUN="mpirun -n $(( PBS_NP * PBS_NUM_NODES )) -ppn ${PBS_NP} --cpu-bind core --depth 1"
+APRUN="mpirun -n 1936 -ppn 32 --cpu-bind core --depth 1"
 
 #
 #-----------------------------------------------------------------------
@@ -121,7 +126,6 @@ done
   ln -snf ${bkpath}/${suffix}fv_srf_wnd.res.tile1.nc    data/inputs/bkg/fv_srf_wnd.res.tile1.nc
   ln -snf ${bkpath}/${suffix}coupler.res                data/inputs/bkg/coupler.res
 
-done
 
 #
 #-----------------------------------------------------------------------
@@ -211,12 +215,12 @@ cp ${FIX_JEDI}/dynamics_lam_cmaq.yaml .
 cp ${FIX_JEDI}/field_table .
 cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/fmsmpp.nml .
 #cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/input_lam* .
-cp ${fixsimple}/input_lam* .
-cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml} example-HybridVar.yaml .
+cp ${fixsimple}/3kmNA_p1936_input.nml ./INPUT/
+cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml}  HybridVar-jedi.yaml 
 cp ${fixsimple}/dr-mgbf/norm-sdl_vdl-1G_v1_init-p1936.nml .
-ln -sf ${fixsimple}/dr-mgbf/dr-nomr*var .
-cp  example-HybridVar.yaml  HybridVar-jedi.yaml
-sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${tCDATE_M1_ISO}|" HybridVar-jedi.yaml
+ln -sf ${fixsimple}/dr-mgbf/dr-norm*var .
+sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${CDATE_M1_ISO}|" HybridVar-jedi.yaml
+ln -sf ${fixsimple}/DataFix .
 
 #
 
@@ -233,6 +237,7 @@ export OMP_NUM_THREADS=1
 export pgm="fv3jedi_var.x"
 #jedi_exec="${EXECdir}/bin/${pgm}"
 jedi_exec="${RDASAPP_DIR}/build/bin/${pgm}"
+jedi_exec="${jedi_bundle}/build/bin/${pgm}"
 cp "${jedi_exec}" "${anldir}/${pgm}"
 
 . prep_step

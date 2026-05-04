@@ -23,8 +23,9 @@ pgmout=${mrmsdir}/pgm.log
 ### Begin executable code ###
 #############################
 
-set +x
+rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_na3km/rrfs-workflow  #cltthinkdeb
 source ${rrfsworkflow}/versions/run.ver
+set +x
 module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
 module load run_analysis_gsi.local
 ulimit -s unlimited
@@ -225,7 +226,7 @@ EOF
    module purge
    #cltorg
    RDASAPP_DIR=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp #thinkdeb
-   RDASAPP=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp  #cltthinkdeb
+   RDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp  #cltthinkdeb
    module use "${RDASApp}"/modulefiles
    module load RDAS/wcoss2.intel
    set -euox pipefail
