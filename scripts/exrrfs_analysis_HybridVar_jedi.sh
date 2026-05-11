@@ -42,17 +42,17 @@ ulimit -v unlimited
 ulimit -a
 set -euox pipefail
 jedi_bundle=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-jedi-bundle/jedi-bundle
-export OOPS_TRACE=0
-export LD_LIBRARY_PATH="${jedi_bundle}/build/lib64:${LD_LIBRARY_PATH}"
-export FI_MR_CACHE_MONITOR=memhooks
-export FI_MR_CACHE_MAX_COUNT=0
-export MPICH_ENV_DISPLAY=1
-export MPICH_OFI_STARTUP_CONNECT=1
-export MPICH_OFI_VERBOSE=1
-export MPICH_MPIIO_HINTS='*.tile1.nc:romio_cb_read=disable,*.sfc_data.nc:romio_cb_read=disable,*.phy_data.nc:romio_cb_read=disable,*.fv_*.res.nc:romio_cb_write=enable,*.sfc_data.nc:romio_cb_write=enable'
-export OMP_STACKSIZE=500M
-export OMP_NUM_THREADS=1 #${TPP_RUN_ANALYSIS}
-APRUN="mpirun -n 1936 -ppn 32 --cpu-bind core --depth 1"
+export OMP_NUM_THREADS=1
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+export OMP_STACKSIZE=1G
+
+export JEDI_LIBS="${jedi_bundle}/build/lib64:${jedi_bundle}/build/lib"
+export LD_LIBRARY_PATH="$JEDI_LIBS:$MKLROOT/lib/intel64:$LD_LIBRARY_PATH"
+
+APRUN="mpiexec -l --line-buffer -n 1936 -ppn 32 --cpu-bind core --depth 4 --label -env LD_LIBRARY_PATH $LD_LIBRARY_PATH"
+
+
 
 #
 #-----------------------------------------------------------------------
@@ -76,6 +76,7 @@ CDATE=${YYYYMMDD}${HH}
 CDATE_M1=$(date +%Y%m%d%H -d "$(echo "${CDATE}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/') 1 hour ago")
 echo "thinkdeb CDATA/CDATA_M1 are "$CDATE ' ' $CDATE_M1
 CDATE_M1_ISO=$(date -u -d "${CDATE_M1:0:8} ${CDATE_M1:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
+CDATE_ISO=$(date -u -d "${CDATE:0:8} ${CDATE:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
 
 
 
@@ -217,9 +218,19 @@ cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/fmsmpp.nml .
 #cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/input_lam* .
 cp ${fixsimple}/3kmNA_p1936_input.nml ./INPUT/
 cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml}  HybridVar-jedi.yaml 
-cp ${fixsimple}/dr-mgbf/norm-sdl_vdl-1G_v1_init-p1936.nml .
+mkdir -p dr-mgbf-fix
+cp ${fixsimple}/dr-mgbf/norm-sdl_vdl_v1_init-p1936.nml ./dr-mgbf-fix/
+cp ${fixsimple}/dr-mgbf/norm-dbz-1G-2var_group_p1936.nml ./dr-mgbf-fix/
+cp ${fixsimple}/dr-mgbf/norm-non_dbz-6var_group_p1936.nml ./dr-mgbf-fix/
+
+cp ${fixsimple}/gsiparm_regional.anl .
+cp ${fixsimple}/fv3_grid_spec .
+cp ${fixsimple}/berror_stats .
+
 ln -sf ${fixsimple}/dr-mgbf/dr-norm*var .
 sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${CDATE_M1_ISO}|" HybridVar-jedi.yaml
+sed -i "s|datetime: &analysisDate .*|datetime: \&analysisDate ${CDATE_ISO}|" HybridVar-jedi.yaml 
+
 ln -sf ${fixsimple}/DataFix .
 
 #

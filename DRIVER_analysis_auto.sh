@@ -387,7 +387,7 @@ run_branch() {
     if [[ "${TRACE_DRIVER:-FALSE}" == "TRUE" ]]; then
         driver_cmd=(bash -x "${branch_driver_script}" "${next_enspath}" "${next_controlpath}")
     else
-        driver_cmd=(bash "${branch_driver_script}" "${next_enspath}"  "${next_controlpath}")
+        driver_cmd=(bash "${branch_driver_script}" "${next_enspath}"  "${next_controlpath:-XXXX_not_used}")
     fi
 
     if "${driver_cmd[@]}" >> "${branch_status_file}" 2>&1; then

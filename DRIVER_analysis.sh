@@ -11,9 +11,10 @@
 ################
 
 # Paths to local installs
+#clt RDASApp=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp
 RDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp
 rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_na3km/rrfs-workflow
-baserundir=/lfs/h2/emc/stmp/samuel.degelia/GETKF_PARALLEL
+baserundir=/lfs/h2/emc/stmp/Ting.Lei/GETKF_PARALLEL
 
 # GETKF config
 getkfyaml=/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
