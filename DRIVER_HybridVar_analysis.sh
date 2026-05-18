@@ -401,7 +401,7 @@ job4=$(submit_job_or_exit "GSI verification job" \
     -v "envfile=${job_envfile}" \
     -v "PBS_NP=${VERIF_PBS_NP},PBS_NUM_NODES=${VERIF_PBS_NUM_NODES}" \
     -W "depend=afterok:${job3}" \
-    "${script_dir}/scripts/exrrfs_analysis_gsi.sh")
+    "${script_dir}/scripts/exrrfs_compare_HybridVar_jedi_gsi.sh")
 echo "Submitted GSI verification job: ${job4}"
 echo "GSI verification PBS log will appear after the job starts: ${VERIF_LOG}"
 

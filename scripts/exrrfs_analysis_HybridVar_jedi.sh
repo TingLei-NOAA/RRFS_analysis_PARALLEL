@@ -258,6 +258,8 @@ export err=$?; err_chk
 #cp $pgmout ${COMOUT}/rrfs.t${HH}z.jediout_observer.tm00
 #cp ${JCB_CONFIG_ENKF_OBSERVER} ${COMOUT}
 #cp jedienkf_observer.yaml ${COMOUT}/jedienkf_observer.yaml
-mv errfile errfile_jedi_enkf
+mv errfile errfile_jedi_hyb
+mkdir -p $verfidir/dr-diag
+cp j*diag*  ${verfidir}/dr-diag/
 
 echo "JEDI-HybridVar PROCESS completed successfully!!!"
