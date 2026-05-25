@@ -79,7 +79,7 @@ CDATE_M1_ISO=$(date -u -d "${CDATE_M1:0:8} ${CDATE_M1:8:2}:00:00" +"%Y-%m-%dT%H:
 CDATE_ISO=$(date -u -d "${CDATE:0:8} ${CDATE:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
 
 
-script_dir="~/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
+script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
 
 
 #
@@ -114,7 +114,7 @@ script_dir="~/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
   cp ${gsianl_dir}/diag*conv*nc* .
   cp $anldir/j*diag*nc* .   # jedi diag outptu 
 
-  gzip -d *.gz
+  gzip -df *.gz
   ${script_dir}/run_convert_gsi_diag_to_gdiag.sh $CDATE .
   status=$?
 

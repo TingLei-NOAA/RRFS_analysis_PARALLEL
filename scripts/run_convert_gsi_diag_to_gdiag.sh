@@ -35,6 +35,7 @@ if [[ ! -d "${diag_dir}" ]]; then
 fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+rdas_scripts_diag_dir="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/rrfs-test/ush/diagnostics_and_graphics"
 
 shopt -s nullglob
 gdiags=("${diag_dir}"/diag_conv_t_anl*)
@@ -52,7 +53,7 @@ echo "Converting GSI diag files to JEDI jdiag for ${analysis_time}"
 echo "Input/output directory: ${diag_dir}"
 
 pushd "${diag_dir}" >/dev/null
-python "${script_dir}/gdiag_to_jdiag.py" "${analysis_time}" "${gdiags[@]}"
+python "${rdas_scripts_diag_dir}/gdiag_to_jdiag.py" "${analysis_time}" "${gdiags[@]}"
 popd >/dev/null
 
 echo "Converted ${#gdiags[@]} GSI diag files. Output written to ${diag_dir}/jdiag*.nc"

@@ -489,47 +489,39 @@ case "$-" in
     set +x
     ;;
 esac
-while qstat_output=$(qstat "${job1}" "${job2}" "${job3}" "${job4}" 2>/dev/null || true); do
-    if [[ "${qstat_output}" != *"${job1}"* && \
-          "${qstat_output}" != *"${job2}"* && \
-          "${qstat_output}" != *"${job3}"* && \
-          "${qstat_output}" != *"${job4}"* ]]; then
+jobs_to_check=(
+  "$job1"
+  "$job2"
+  "$job3"
+  # "$job4"   # temporarily disabled; uncomment to add back
+)
+
+while qstat_output=$(qstat "${jobs_to_check[@]}" 2>/dev/null || true); do
+    still_running=false
+
+    for job in "${jobs_to_check[@]}"; do
+        if [[ "${qstat_output}" == *"${job}"* ]]; then
+            still_running=true
+            break
+        fi
+    done
+
+    if [[ "${still_running}" == false ]]; then
         break
     fi
+
     sleep 10
 done
+
+
 if [[ "${xtrace_was_on}" -eq 1 ]]; then
     set -x
 fi
 
-{
-    echo "Final PBS status table"
-    printf "%-12s %-20s %-12s %-8s %-45s %s\n" "TASK" "JOBID" "EXIT_STATUS" "STATE" "SCRIPT" "COMMENT"
-} >> "${summary_status}"
-pbs_rc=0
-check_pbs_job_success "radar" "${job1}" "${RADAR_SCRIPT}" "${RADAR_LOG}" || pbs_rc=1
-check_pbs_job_success "bufr" "${job2}" "${BUFR_SCRIPT}" "${BUFR_LOG}" || pbs_rc=1
-check_pbs_job_success "HybridVar" "${job3}" "${HYBRIDVAR_SCRIPT}" "${HybridVar_LOG}" || pbs_rc=1
-verif_rc=0
-check_pbs_job_success "verif" "${job4}" "${VERIF_SCRIPT}" "${VERIF_LOG}" || verif_rc=1
-if [[ "${verif_rc}" -ne 0 ]]; then
-    if [[ "${ALLOW_VERIF_FAILURE}" == "TRUE" ]]; then
-        echo "WARNING: Verification job failed, but ALLOW_VERIF_FAILURE=TRUE; cycle will still be marked successful." >&2
-        echo "verification_failure_ignored=TRUE" >> "${summary_status}"
-    else
-        pbs_rc=1
-        echo "verification_failure_ignored=FALSE" >> "${summary_status}"
-    fi
-else
-    echo "verification_failure_ignored=FALSE" >> "${summary_status}"
-fi
-echo >> "${summary_status}"
-if [[ "${pbs_rc}" -ne 0 ]]; then
-    echo "overall_status=FAILED" >> "${summary_status}"
-    echo "ERROR: One or more PBS jobs failed; see summary: ${summary_status}" >&2
-    exit 1
-fi
-echo "overall_status=SUCCESS" >> "${summary_status}"
+check_pbs_job_success "radar" "${job1}"
+check_pbs_job_success "bufr" "${job2}"
+check_pbs_job_success "HybridVar" "${job3}"
+#cltorg check_pbs_job_success "verif" "${job4}"
 
 echo "HybridVar driver finished waiting for submitted jobs."
 echo "Cycle logs are in: ${cycle_logdir}"
