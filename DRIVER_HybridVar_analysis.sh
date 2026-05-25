@@ -334,6 +334,9 @@ job1=$(submit_job_or_exit "radar processing job" \
 # Convert prepbufr observations to IODA
 echo "Submitting BUFR/IODA task: ${BUFR_SCRIPT}"
 echo "  PBS stdout/stderr: ${BUFR_LOG}"
+echo "thinkdeb module are "
+module list
+qsub --version
 job2=$(submit_job_or_exit "BUFR to IODA job" \
     -N "${BUFR_JOB_NAME}" \
     -A "${PBS_ACCOUNT}" \
@@ -346,6 +349,8 @@ job2=$(submit_job_or_exit "BUFR to IODA job" \
     -v "PBS_NP=${BUFR_PBS_NP},PBS_NUM_NODES=${BUFR_PBS_NUM_NODES}" \
     "${BUFR_SCRIPT}")
 
+echo "thinkdeb after job2"
+qsub --version
 # Run the GETKF analysis after both upstream jobs complete successfully
 #    -W "depend=afterok:${job1}:${job2}" \
 #    
@@ -438,7 +443,7 @@ echo "  verifdir=\${verifdir}"
 echo "  anldir=\${anldir}"
 
 cd "${currdir}"
-exec bash "${VERIF_SCRIPT}"
+exec bash "${script_dir}/scripts/exrrfs_compare_HybridVar_jedi_gsi.sh"
 EOF
 chmod +x "${debug_verification_script}"
 cp "${debug_verification_script}" "${currdir}/sub_verification.sh"

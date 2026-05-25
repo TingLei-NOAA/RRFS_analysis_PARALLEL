@@ -89,6 +89,9 @@ CDATE_ISO=$(date -u -d "${CDATE:0:8} ${CDATE:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
 #
 #-----------------------------------------------------------------------
 #
+#
+echo thinkdeb pwdir
+pwd 
 mkdir -p data/inputs
 for imem in  $(seq 1 $nens); do
 
@@ -259,7 +262,7 @@ export err=$?; err_chk
 #cp ${JCB_CONFIG_ENKF_OBSERVER} ${COMOUT}
 #cp jedienkf_observer.yaml ${COMOUT}/jedienkf_observer.yaml
 mv errfile errfile_jedi_hyb
-mkdir -p $verfidir/dr-diag
-cp j*diag*  ${verfidir}/dr-diag/
+#mkdir -p $verfidir/dr-diag
+#cltcp j*diag*  ${verfidir}/dr-diag/
 
 echo "JEDI-HybridVar PROCESS completed successfully!!!"

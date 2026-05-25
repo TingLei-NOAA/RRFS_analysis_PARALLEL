@@ -25,7 +25,8 @@ pgmout=${bufrdir}/pgm.log
 
 cd ${bufrdir}
 set +x
-module purge
+#clt module purge
+module reset 
 #cltorg source ${rrfsworkflow}/versions/run.ver
 #cltorg
 rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_na3km/rrfs-workflow

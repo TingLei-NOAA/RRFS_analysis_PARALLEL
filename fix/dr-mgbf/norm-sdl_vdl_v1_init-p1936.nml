@@ -1,0 +1,8 @@
+&parameters_mgbf_init
+ nscale=1,nvargrp=2,
+  readin_mgbf_nml_group(1)="./dr-mgbf-fix/norm-dbz-1G-2var_group_p1936.nml"
+  readin_mgbf_nml_group(2)="./dr-mgbf-fix/norm-non_dbz-6var_group_p1936.nml",
+  readin_multigrp_cor=1.0,0.6,0.6,1.0,
+  readin_ivargroup=2,8,
+/
+
