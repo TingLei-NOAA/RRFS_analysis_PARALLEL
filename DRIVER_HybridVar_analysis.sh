@@ -44,6 +44,11 @@ fi
 script_dir=$(cd "$(dirname "$0")" && pwd)
 source "${script_dir}/scripts/driver_analysis_common.sh"
 submit="${script_dir}/scripts/submit_job.sh"
+RADAR_SCRIPT="${script_dir}/scripts/exrrfs_process_radar.sh"
+BUFR_SCRIPT="${script_dir}/scripts/exrrfs_ioda_bufr.sh"
+HYBRIDVAR_SCRIPT="${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh"
+VERIF_SCRIPT="${script_dir}/scripts/exrrfs_compare_HybridVar_jedi_gsi.sh"
+ALLOW_VERIF_FAILURE=${ALLOW_VERIF_FAILURE:-TRUE}
 
 submit_job_or_exit() {
     local desc="$1"
@@ -64,6 +69,8 @@ submit_job_or_exit() {
 check_pbs_job_success() {
     local label="$1"
     local jobid="$2"
+    local script="${3:-UNKNOWN}"
+    local pbs_log="${4:-UNKNOWN}"
     local qstat_output
     local exit_status
     local job_state
@@ -79,6 +86,9 @@ check_pbs_job_success() {
     error_path=$(awk -F= '/Error_Path/ {sub(/^[[:space:]]*Error_Path[[:space:]]*=[[:space:]]*/, ""); print; exit}' <<< "${qstat_output}")
 
     if [[ -z "${exit_status}" ]]; then
+        if [[ -n "${summary_status:-}" ]]; then
+            printf "%-12s %-20s %-12s %-8s %-45s %s\n" "${label}" "${jobid}" "UNKNOWN" "${job_state:-UNKNOWN}" "${script}" "${comment:-NO_COMMENT}" >> "${summary_status}"
+        fi
         echo "ERROR: Could not determine PBS Exit_status for ${label} job ${jobid}" >&2
         echo "  job_state=${job_state:-UNKNOWN}" >&2
         echo "  comment=${comment:-NONE}" >&2
@@ -88,6 +98,9 @@ check_pbs_job_success() {
     fi
 
     if [[ "${exit_status}" != "0" ]]; then
+        if [[ -n "${summary_status:-}" ]]; then
+            printf "%-12s %-20s %-12s %-8s %-45s %s\n" "${label}" "${jobid}" "${exit_status}" "${job_state:-UNKNOWN}" "${script}" "${comment:-NO_COMMENT}" >> "${summary_status}"
+        fi
         echo "ERROR: ${label} job ${jobid} failed with Exit_status=${exit_status}" >&2
         echo "  job_state=${job_state:-UNKNOWN}" >&2
         echo "  comment=${comment:-NONE}" >&2
@@ -96,9 +109,16 @@ check_pbs_job_success() {
         return 1
     fi
 
+    if [[ -n "${summary_status:-}" ]]; then
+        printf "%-12s %-20s %-12s %-8s %-45s %s\n" "${label}" "${jobid}" "${exit_status}" "${job_state:-UNKNOWN}" "${script}" "${comment:-OK}" >> "${summary_status}"
+    fi
     echo "SUCCESS: ${label} job ${jobid} completed with Exit_status=0"
     echo "  Output_Path=${output_path:-UNKNOWN}"
     return 0
+}
+
+append_summary_line() {
+    echo "$*" >> "${summary_status}"
 }
 
 # -----------------------------------------------------------------------
@@ -232,6 +252,7 @@ BUFR_LOG="${cycle_logdir}/bufr.log"
 HybridVar_LOG="${cycle_logdir}/HybridVar.log"
 VERIF_LOG="${cycle_logdir}/verif.log"
 job_envfile="${cycle_logdir}/${envfile}"
+summary_status="${cycle_logdir}/summary.status"
 rm -f "${RADAR_LOG}" "${BUFR_LOG}" "${HybridVar_LOG}" "${VERIF_LOG}"
 cp "${envfile_abs}" "${job_envfile}"
 cp "${job_envfile}" ${bufrdir}
@@ -242,12 +263,50 @@ cp ./scripts/prep_ioda_cast.sh ${bufrdir}
 cp ./scripts/prep_phydata_dbz.py ${anldir}
 cp ./scripts/apply_jedi_incs.sh ${verifdir}
 
+source_cycle="${enspath%/}"
+source_hh="${source_cycle##*/}"
+source_date_dir="${source_cycle%/*}"
+source_yyyymmdd="${source_date_dir##*.}"
+source_cycle="${source_yyyymmdd}${source_hh}"
+git_rev=$(git -C "${currdir}" rev-parse --short HEAD 2>/dev/null || echo UNKNOWN)
+if git_status_short=$(git -C "${currdir}" status --short 2>/dev/null); then
+    git_dirty_count=$(printf "%s\n" "${git_status_short}" | wc -l | awk '{print $1}')
+else
+    git_dirty_count=UNKNOWN
+fi
+{
+    echo "HybridVar cycle summary"
+    echo "created_utc=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    echo "branch=HybridVar"
+    echo "source_cycle=${source_cycle}"
+    echo "analysis_cycle=${YYYYMMDD}${HH}"
+    echo "enspath=${enspath}"
+    echo "controlpath=${controlpath}"
+    echo "anldir=${anldir}"
+    echo "verifdir=${verifdir}"
+    echo "cycle_logdir=${cycle_logdir}"
+    echo "envfile=${job_envfile}"
+    echo "debug_hybridvar_script=${debug_hybridvar_script:-${cycle_logdir}/sub_hybridvar.sh}"
+    echo "debug_verification_script=${debug_verification_script:-${cycle_logdir}/sub_verification.sh}"
+    echo "driver_script=${script_dir}/DRIVER_HybridVar_analysis.sh"
+    echo "git_rev=${git_rev}"
+    echo "git_dirty_count=${git_dirty_count}"
+    echo "allow_verif_failure=${ALLOW_VERIF_FAILURE}"
+    echo "radar_script=${RADAR_SCRIPT}"
+    echo "bufr_script=${BUFR_SCRIPT}"
+    echo "hybridvar_script=${HYBRIDVAR_SCRIPT}"
+    echo "verification_script=${VERIF_SCRIPT}"
+    echo
+} > "${summary_status}"
+echo "CYCLE_SUMMARY_STATUS=${summary_status}"
+
 echo "HybridVar cycle run directories:"
 echo "  BUFR work directory: ${bufrdir}"
 echo "  MRMS work directory: ${mrmsdir}"
 echo "  HybridVar analysis directory: ${anldir}"
 echo "  Verification work directory: ${verifdir}"
 echo "HybridVar cycle log directory: ${cycle_logdir}"
+echo "HybridVar summary status: ${summary_status}"
 echo "HybridVar environment file used by PBS jobs: ${job_envfile}"
 echo "  radar PBS log: ${RADAR_LOG}"
 echo "  bufr PBS log: ${BUFR_LOG}"
@@ -258,7 +317,7 @@ debug_hybridvar_script="${cycle_logdir}/sub_hybridvar.sh"
 debug_verification_script="${cycle_logdir}/sub_verification.sh"
 
 # Create radar observations
-echo "Submitting radar task: ${script_dir}/scripts/exrrfs_process_radar.sh"
+echo "Submitting radar task: ${RADAR_SCRIPT}"
 echo "  PBS stdout/stderr: ${RADAR_LOG}"
 job1=$(submit_job_or_exit "radar processing job" \
     -N "${RADAR_JOB_NAME}" \
@@ -270,10 +329,10 @@ job1=$(submit_job_or_exit "radar processing job" \
     -o "${RADAR_LOG}" \
     -v "envfile=${job_envfile}" \
     -v "PBS_NP=${RADAR_PBS_NP},PBS_NUM_NODES=${RADAR_PBS_NUM_NODES}" \
-    "${script_dir}/scripts/exrrfs_process_radar.sh")
+    "${RADAR_SCRIPT}")
 
 # Convert prepbufr observations to IODA
-echo "Submitting BUFR/IODA task: ${script_dir}/scripts/exrrfs_ioda_bufr.sh"
+echo "Submitting BUFR/IODA task: ${BUFR_SCRIPT}"
 echo "  PBS stdout/stderr: ${BUFR_LOG}"
 job2=$(submit_job_or_exit "BUFR to IODA job" \
     -N "${BUFR_JOB_NAME}" \
@@ -285,7 +344,7 @@ job2=$(submit_job_or_exit "BUFR to IODA job" \
     -o "${BUFR_LOG}" \
     -v "envfile=${job_envfile}" \
     -v "PBS_NP=${BUFR_PBS_NP},PBS_NUM_NODES=${BUFR_PBS_NUM_NODES}" \
-    "${script_dir}/scripts/exrrfs_ioda_bufr.sh")
+    "${BUFR_SCRIPT}")
 
 # Run the GETKF analysis after both upstream jobs complete successfully
 #    -W "depend=afterok:${job1}:${job2}" \
@@ -321,14 +380,14 @@ echo "  anldir=\${anldir}"
 echo "  HybridVaryaml=\${HybridVaryaml}"
 
 cd "${currdir}"
-exec bash "${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh"
+exec bash "${HYBRIDVAR_SCRIPT}"
 EOF
 chmod +x "${debug_hybridvar_script}"
 cp "${debug_hybridvar_script}" "${currdir}/sub_hybridvar.sh"
 echo "Wrote debug HybridVar PBS script: ${debug_hybridvar_script}"
 echo "Convenience copy: ${currdir}/sub_hybridvar.sh"
 
-echo "Submitting HybridVar analysis task: ${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh"
+echo "Submitting HybridVar analysis task: ${HYBRIDVAR_SCRIPT}"
 echo "  PBS stdout/stderr: ${HybridVar_LOG}"
 echo "  Task work directory after cd: ${anldir}"
 echo "  Task internal pgmout: ${anldir}/pgm.log"
@@ -344,7 +403,7 @@ job3=$(submit_job_or_exit "HybridVar analysis job" \
     -v "envfile=${job_envfile}" \
     -v "PBS_NP=${HybridVar_PBS_NP},PBS_NUM_NODES=${HybridVar_PBS_NUM_NODES}" \
     -W "depend=afterok:${job1}:${job2}" \
-    "${script_dir}/scripts/exrrfs_analysis_HybridVar_jedi.sh")
+    "${HYBRIDVAR_SCRIPT}")
 echo "Submitted HybridVar analysis job: ${job3}"
 echo "HybridVar PBS log will appear after the job starts: ${HybridVar_LOG}"
 
@@ -379,7 +438,7 @@ echo "  verifdir=\${verifdir}"
 echo "  anldir=\${anldir}"
 
 cd "${currdir}"
-exec bash "${script_dir}/scripts/exrrfs_analysis_gsi.sh"
+exec bash "${VERIF_SCRIPT}"
 EOF
 chmod +x "${debug_verification_script}"
 cp "${debug_verification_script}" "${currdir}/sub_verification.sh"
@@ -387,7 +446,7 @@ echo "Wrote debug verification PBS script: ${debug_verification_script}"
 echo "Convenience copy: ${currdir}/sub_verification.sh"
 
 # Run the verification after the GETKF job completes successfully
-echo "Submitting GSI verification task: ${script_dir}/scripts/exrrfs_analysis_gsi.sh"
+echo "Submitting verification task: ${VERIF_SCRIPT}"
 echo "  PBS stdout/stderr: ${VERIF_LOG}"
 echo "  Dependency: afterok:${job3}"
 job4=$(submit_job_or_exit "GSI verification job" \
@@ -401,12 +460,21 @@ job4=$(submit_job_or_exit "GSI verification job" \
     -v "envfile=${job_envfile}" \
     -v "PBS_NP=${VERIF_PBS_NP},PBS_NUM_NODES=${VERIF_PBS_NUM_NODES}" \
     -W "depend=afterok:${job3}" \
-    "${script_dir}/scripts/exrrfs_compare_HybridVar_jedi_gsi.sh")
-echo "Submitted GSI verification job: ${job4}"
-echo "GSI verification PBS log will appear after the job starts: ${VERIF_LOG}"
+    "${VERIF_SCRIPT}")
+echo "Submitted verification job: ${job4}"
+echo "Verification PBS log will appear after the job starts: ${VERIF_LOG}"
 
 #cltorg echo "Submitted jobs: radar=${job1} bufr=${job2} getkf=${job3} verif=${job4}"
 echo "Submitted jobs: radar=${job1} bufr=${job2} HybridVar=${job3} verif=${job4}"
+{
+    echo "Task submission table"
+    printf "%-12s %-20s %-45s %s\n" "TASK" "JOBID" "SCRIPT" "PBS_LOG"
+    printf "%-12s %-20s %-45s %s\n" "radar" "${job1}" "${RADAR_SCRIPT}" "${RADAR_LOG}"
+    printf "%-12s %-20s %-45s %s\n" "bufr" "${job2}" "${BUFR_SCRIPT}" "${BUFR_LOG}"
+    printf "%-12s %-20s %-45s %s\n" "HybridVar" "${job3}" "${HYBRIDVAR_SCRIPT}" "${HybridVar_LOG}"
+    printf "%-12s %-20s %-45s %s\n" "verif" "${job4}" "${VERIF_SCRIPT}" "${VERIF_LOG}"
+    echo
+} >> "${summary_status}"
 
 # Wait for all jobs to complete
 xtrace_was_on=0
@@ -429,13 +497,38 @@ if [[ "${xtrace_was_on}" -eq 1 ]]; then
     set -x
 fi
 
-check_pbs_job_success "radar" "${job1}"
-check_pbs_job_success "bufr" "${job2}"
-check_pbs_job_success "HybridVar" "${job3}"
-check_pbs_job_success "verif" "${job4}"
+{
+    echo "Final PBS status table"
+    printf "%-12s %-20s %-12s %-8s %-45s %s\n" "TASK" "JOBID" "EXIT_STATUS" "STATE" "SCRIPT" "COMMENT"
+} >> "${summary_status}"
+pbs_rc=0
+check_pbs_job_success "radar" "${job1}" "${RADAR_SCRIPT}" "${RADAR_LOG}" || pbs_rc=1
+check_pbs_job_success "bufr" "${job2}" "${BUFR_SCRIPT}" "${BUFR_LOG}" || pbs_rc=1
+check_pbs_job_success "HybridVar" "${job3}" "${HYBRIDVAR_SCRIPT}" "${HybridVar_LOG}" || pbs_rc=1
+verif_rc=0
+check_pbs_job_success "verif" "${job4}" "${VERIF_SCRIPT}" "${VERIF_LOG}" || verif_rc=1
+if [[ "${verif_rc}" -ne 0 ]]; then
+    if [[ "${ALLOW_VERIF_FAILURE}" == "TRUE" ]]; then
+        echo "WARNING: Verification job failed, but ALLOW_VERIF_FAILURE=TRUE; cycle will still be marked successful." >&2
+        echo "verification_failure_ignored=TRUE" >> "${summary_status}"
+    else
+        pbs_rc=1
+        echo "verification_failure_ignored=FALSE" >> "${summary_status}"
+    fi
+else
+    echo "verification_failure_ignored=FALSE" >> "${summary_status}"
+fi
+echo >> "${summary_status}"
+if [[ "${pbs_rc}" -ne 0 ]]; then
+    echo "overall_status=FAILED" >> "${summary_status}"
+    echo "ERROR: One or more PBS jobs failed; see summary: ${summary_status}" >&2
+    exit 1
+fi
+echo "overall_status=SUCCESS" >> "${summary_status}"
 
 echo "HybridVar driver finished waiting for submitted jobs."
 echo "Cycle logs are in: ${cycle_logdir}"
+echo "  summary status: ${summary_status}"
 echo "  radar PBS log: ${RADAR_LOG}"
 echo "  bufr PBS log: ${BUFR_LOG}"
 echo "  HybridVar PBS log: ${HybridVar_LOG}"
