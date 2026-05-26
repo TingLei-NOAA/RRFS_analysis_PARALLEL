@@ -257,6 +257,10 @@ cp "${jedi_exec}" "${anldir}/${pgm}"
 . prep_step
 
 ${APRUN} ./$pgm HybridVar-jedi.yaml >>$pgmout 2>errfile
+dir_save_stats="/u/ting.lei/dr-3kmNA-parallel/dr_save_stats"
+mkdir -p $dir_save_stats
+cp $controlpath/analysis/*gsiout*  ${dir_save_stats}/gsi_out_$CDATE
+cp $pgmout ${dir_save_stats}/jedi_out$CDATE
 export err=$?; err_chk
 #cp $pgmout ${COMOUT}/rrfs.t${HH}z.jediout_observer.tm00
 #cp ${JCB_CONFIG_ENKF_OBSERVER} ${COMOUT}
