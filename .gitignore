@@ -7,3 +7,5 @@ __pycache__/
 *.pyc
 *.log
 logs/*
+fix/fv3_grid_spec
+fix/berror_stats
