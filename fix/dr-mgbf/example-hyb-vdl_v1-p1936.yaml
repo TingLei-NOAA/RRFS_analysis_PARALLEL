@@ -81,8 +81,8 @@ cost function:
 
   background:
     datetime: &analysisDate 2024-05-27T01:00:00Z
-    regional restart: true
     filetype: fms restart
+    regional restart: true
     datapath: data/inputs/bkg
     filename_core: fv_core.res.tile1.nc
     filename_trcr: fv_tracer.res.tile1.nc
@@ -170,9 +170,11 @@ cost function:
             halo: 1
           forward interpolator:
             local interpolator type: oops unstructured grid interpolator
+            regional check enabled: false
           inverse interpolator:
             local interpolator type: oops unstructured grid interpolator
             regional nn fill distance in km: 800
+            regional check enabled: false
           state variables to inverse:
           - eastward_wind
           - northward_wind
@@ -253,8 +255,10 @@ cost function:
 
              forward interpolator:
                  local interpolator type: oops unstructured grid interpolator
+                 regional check enabled: false
              inverse interpolator:
                  local nterpolator type: oops unstructured grid interpolator
+                 regional check enabled: false
       weight:
         value: 0.8
 
