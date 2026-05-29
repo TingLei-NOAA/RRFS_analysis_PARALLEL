@@ -13,7 +13,8 @@ set -euo pipefail
 
 # Paths to local installs
 RDASApp=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp
-rrfsworkflow=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-fork-fv3jedi-workflow/rrfs-workflow
+#cltcactus  rrfsworkflow=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-fork-fv3jedi-workflow/rrfs-workflow
+rrfsworkflow=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rrfs-workflow-fork/rrfs-workflow
 baserundir=/lfs/h2/emc/stmp/${USER}/3DVarAnalysis_PARALLEL
 
 # GETKF config
@@ -153,7 +154,7 @@ GETKF_LOG="getkf.log"
 # HybridVar analysis
 HybridVar_JOB_NAME="na3km_hybrid"
 HybridVar_SELECT="62:mpiprocs=128:ompthreads=1:ncpus=128"
-HybridVar_WALLTIME="01:00:00"
+HybridVar_WALLTIME="02:00:00"
 HybridVar_PLACE="vscatter"
 HybridVar_LOG="HybridVar.log"
 

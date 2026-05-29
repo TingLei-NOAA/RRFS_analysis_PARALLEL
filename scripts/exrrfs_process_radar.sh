@@ -226,8 +226,10 @@ EOF
 #clt   module purge
    module reset
    #cltorg
-   RDASAPP_DIR=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp #thinkdeb
-   RDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp  #cltthinkdeb
+   #cltRDASAPP_DIR=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp #thinkdeb
+   RDASAPP_DIR=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RADASApp #thinkdeb
+#clt   RDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp  #cltthinkdeb
+   RDASApp=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp
    module use "${RDASApp}"/modulefiles
    module load RDAS/wcoss2.intel
    set -euox pipefail

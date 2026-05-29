@@ -172,6 +172,7 @@ cost function:
             local interpolator type: oops unstructured grid interpolator
           inverse interpolator:
             local interpolator type: oops unstructured grid interpolator
+            regional nn fill distance in km: 800
           state variables to inverse:
           - eastward_wind
           - northward_wind
