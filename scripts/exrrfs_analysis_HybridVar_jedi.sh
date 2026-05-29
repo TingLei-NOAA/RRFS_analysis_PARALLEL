@@ -37,6 +37,9 @@ moduledir="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/modulefiles"
 module use $moduledir
 module load RDAS/wcoss2.intel
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/cray/pe/mpich/8.1.19/ofi/intel/19.0/lib"
+module load intel-oneapi-mkl intel-oneapi-compiler
+export LD_LIBRARY_PATH="$JEDI_LIBS:$MKLROOT/lib/intel64:$LD_LIBRARY_PATH"
+
 ulimit -s unlimited
 ulimit -v unlimited
 ulimit -a
@@ -46,6 +49,12 @@ export OMP_NUM_THREADS=1
 export OMP_PLACES=cores
 export OMP_PROC_BIND=close
 export OMP_STACKSIZE=1G
+export FI_MR_CACHE_MONITOR=memhooks
+export FI_MR_CACHE_MAX_COUNT=0
+export MPICH_OFI_STARTUP_CONNECT=1
+export MPICH_OFI_VERBOSE=1
+export MPICH_MPIIO_HINTS='*.tile1.nc:romio_cb_read=disable,...'
+
 
 export JEDI_LIBS="${jedi_bundle}/build/lib64:${jedi_bundle}/build/lib"
 export LD_LIBRARY_PATH="$JEDI_LIBS:$MKLROOT/lib/intel64:$LD_LIBRARY_PATH"
@@ -248,6 +257,13 @@ ln -sf ${fixsimple}/DataFix .
 #export OOPS_TRACE=1
 #export OOPS_DEBUG=1
 export OMP_NUM_THREADS=1
+
+
+
+
+
+
+
 export pgm="fv3jedi_var.x"
 #jedi_exec="${EXECdir}/bin/${pgm}"
 jedi_exec="${RDASAPP_DIR}/build/bin/${pgm}"
