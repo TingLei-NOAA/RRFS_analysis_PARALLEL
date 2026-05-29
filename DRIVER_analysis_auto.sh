@@ -15,6 +15,13 @@
 # A FAILED entry does not count as processed, so the same cycle is retried on
 # the next invocation.
 #
+# When a branch has a previous SUCCESS, the wrapper scans unsucceeded candidate
+# cycles from the next hour after that SUCCESS through the current UTC hour. If
+# no complete cycle is found, it scans the last 24 hours again for any complete
+# unsucceeded cycle. For HybridVar, a cycle is complete only when both ensemble
+# and control restart files are present. History records are kept sorted by
+# cycle, so backfilled cycles do not leave the history file out of order.
+#
 # The per-invocation monitor log is written as:
 #
 #   ${branch_baserundir}/monitor_enspath_${timestamp}.status
@@ -157,20 +164,38 @@ get_last_processed_cycle() {
     awk 'BEGIN{last=""} $2=="SUCCESS"{last=$1} END{if(last!="") print last; else exit 1}' "${history_file}"
 }
 
-increment_cycle() {
+cycle_to_epoch() {
     local cycle="$1"
-    local cycle_epoch
-    local timestamp
     if ! [[ "${cycle}" =~ ^[0-9]{10}$ ]]; then
-        echo "ERROR: invalid cycle format for increment: ${cycle}" >&2
+        echo "ERROR: invalid cycle format: ${cycle}" >&2
         return 1
     fi
-    cycle_epoch=$(date -u -d "${cycle:0:4}-${cycle:4:2}-${cycle:6:2} ${cycle:8:2}:00:00" +%s) || return 1
-    timestamp=$(date -u -d "@$((cycle_epoch + 3600))" +%Y%m%d%H) || {
-        echo "ERROR: unable to increment cycle: ${cycle}" >&2
+    date -u -d "${cycle:0:4}-${cycle:4:2}-${cycle:6:2} ${cycle:8:2}:00:00" +%s
+}
+
+offset_cycle() {
+    local cycle="$1"
+    local offset_hours="$2"
+    local cycle_epoch
+    local timestamp
+
+    cycle_epoch=$(cycle_to_epoch "${cycle}") || return 1
+    timestamp=$(date -u -d "@$((cycle_epoch + offset_hours * 3600))" +%Y%m%d%H) || {
+        echo "ERROR: unable to offset cycle ${cycle} by ${offset_hours} hours" >&2
         return 1
     }
     echo "${timestamp}"
+}
+
+increment_cycle() {
+    local cycle="$1"
+    offset_cycle "${cycle}" 1
+}
+
+cycle_is_successful() {
+    local history_file="$1"
+    local cycle="$2"
+    awk -v cycle="${cycle}" '$1==cycle && $2=="SUCCESS"{found=1} END{exit found ? 0 : 1}' "${history_file}"
 }
 
 cycle_exists_and_has_restarts() {
@@ -180,15 +205,62 @@ cycle_exists_and_has_restarts() {
     validate_restart_files "${enspath}" >/dev/null
 }
 
+cycle_is_ready_for_branch() {
+    local cycle="$1"
+    local branch_name="$2"
+    local controlpath
+
+    if ! cycle_exists_and_has_restarts "${cycle}"; then
+        return 1
+    fi
+
+    if [[ "${branch_name}" == "HybridVar" ]]; then
+        controlpath="${rrfspath}/rrfs.${cycle:0:8}/${cycle:8:2}"
+        [[ -d "${controlpath}" ]] || return 1
+        validate_control_restart_files "${controlpath}" >/dev/null
+    fi
+}
+
+scan_cycle_range_for_work() {
+    local history_file="$1"
+    local branch_name="$2"
+    local start_cycle="$3"
+    local end_cycle="$4"
+    local cycle="${start_cycle}"
+    local cycle_epoch
+    local end_epoch
+
+    cycle_epoch=$(cycle_to_epoch "${cycle}") || return 1
+    end_epoch=$(cycle_to_epoch "${end_cycle}") || return 1
+
+    while [[ "${cycle_epoch}" -le "${end_epoch}" ]]; do
+        if ! cycle_is_successful "${history_file}" "${cycle}" && cycle_is_ready_for_branch "${cycle}" "${branch_name}"; then
+            echo "${cycle}"
+            return 0
+        fi
+        cycle=$(increment_cycle "${cycle}") || return 1
+        cycle_epoch=$(cycle_to_epoch "${cycle}") || return 1
+    done
+
+    return 1
+}
+
 get_next_cycle_to_process() {
     local history_file="$1"
+    local branch_name="$2"
     local last_processed_cycle
+    local current_cycle
     local next_cycle
+    local rescan_start_cycle
     local cycle
+
+    current_cycle=$(date -u +%Y%m%d%H)
 
     if ! last_processed_cycle=$(get_last_processed_cycle "${history_file}"); then
         while read -r path; do
-            if cycle=$(parse_cycle_from_path "${path}") && cycle_exists_and_has_restarts "${cycle}"; then
+            if cycle=$(parse_cycle_from_path "${path}") \
+                && ! cycle_is_successful "${history_file}" "${cycle}" \
+                && cycle_is_ready_for_branch "${cycle}" "${branch_name}"; then
                 echo "${cycle}"
                 return 0
             fi
@@ -199,10 +271,15 @@ get_next_cycle_to_process() {
     fi
 
     next_cycle=$(increment_cycle "${last_processed_cycle}") || return 1
-    if cycle_exists_and_has_restarts "${next_cycle}"; then
-        echo "${next_cycle}"
+    if scan_cycle_range_for_work "${history_file}" "${branch_name}" "${next_cycle}" "${current_cycle}"; then
         return 0
     fi
+
+    rescan_start_cycle=$(offset_cycle "${current_cycle}" -24) || return 1
+    if scan_cycle_range_for_work "${history_file}" "${branch_name}" "${rescan_start_cycle}" "${current_cycle}"; then
+        return 0
+    fi
+
     return 1
 }
 
@@ -312,8 +389,17 @@ record_processed_cycle() {
     local cycle="$2"
     local status="$3"
     local ts
+    local tmp_history
+
     ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    echo "${cycle} ${status} ${ts}" >> "${history_file}"
+    tmp_history="${history_file}.$$"
+
+    {
+        cat "${history_file}"
+        echo "${cycle} ${status} ${ts}"
+    } | sort -k1,1 -k3,3 > "${tmp_history}"
+
+    mv "${tmp_history}" "${history_file}"
 }
 
 initialize_branch() {
@@ -338,6 +424,10 @@ run_branch() {
     local branch_lockfile="$4"
     local branch_status_file="$5"
     local branch_driver_script="$6"
+    local last_success_cycle
+    local candidate_cycle
+    local current_cycle
+    local rescan_start_cycle
     local next_cycle
     local next_enspath
     local next_controlpath
@@ -355,9 +445,26 @@ run_branch() {
         return 1
     fi
 
-    next_cycle=$(get_next_cycle_to_process "${branch_cycle_history}")
+    if last_success_cycle=$(get_last_processed_cycle "${branch_cycle_history}"); then
+        candidate_cycle=$(increment_cycle "${last_success_cycle}")
+        current_cycle=$(date -u +%Y%m%d%H)
+        rescan_start_cycle=$(offset_cycle "${current_cycle}" -24)
+        log "${branch_status_file}" "${branch_name}" "Last successful cycle in history: ${last_success_cycle}; scanning candidate cycles ${candidate_cycle} through ${current_cycle}"
+        log "${branch_status_file}" "${branch_name}" "If no complete unsucceeded cycle is found in that range, rescanning ${rescan_start_cycle} through ${current_cycle}"
+    else
+        candidate_cycle=""
+        log "${branch_status_file}" "${branch_name}" "No successful cycle found in history; scanning upstream restart directories for the latest complete cycle."
+    fi
+
+    if ! next_cycle=$(get_next_cycle_to_process "${branch_cycle_history}" "${branch_name}"); then
+        next_cycle=""
+    fi
     if [[ -z "${next_cycle}" ]]; then
-        log "${branch_status_file}" "${branch_name}" "No new cycles with complete restart files found."
+        if [[ -n "${candidate_cycle}" ]]; then
+            log "${branch_status_file}" "${branch_name}" "No complete unsucceeded cycles found in the forward scan or the 24-hour rescan window."
+        else
+            log "${branch_status_file}" "${branch_name}" "No new cycles with complete restart files found during upstream scan."
+        fi
         return 0
     fi
 
