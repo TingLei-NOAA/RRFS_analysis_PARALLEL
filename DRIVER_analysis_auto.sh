@@ -3,11 +3,15 @@
 # Automated RRFS analysis launcher for regular Rocoto/cron-style polling.
 #
 # Each invocation checks the upstream RRFS ensemble restart tree for the next
-# complete cycle and launches one analysis branch. Branch selection is controlled
+# complete cycles and launches one analysis branch. Branch selection is controlled
 # by RUN_BRANCH, with default RUN_BRANCH=HybridVar. Valid values are GETKF,
 # HybridVar, or both. RUN_BRNACH is also accepted as a spelling alias.
 # Set FORCE_CLEAN_LOCKS=TRUE to remove the selected branch lock file(s) and exit
 # without launching any branch.
+# Set NUMBER_OF_CYCLES_TO_BE_PROCESSED to the maximum number of ready HybridVar
+# cycles to launch concurrently in one invocation. The default is 1. GETKF is
+# currently capped at one cycle even when RUN_BRANCH=both requests a larger
+# HybridVar batch.
 #
 # GETKF and HybridVar are managed independently. Each branch has its own base
 # run directory, cycle history file, lock file, monitor log, and driver script.
@@ -17,17 +21,20 @@
 #
 # When a branch has a previous SUCCESS, the wrapper scans unsucceeded candidate
 # cycles from the next hour after that SUCCESS through the current UTC hour. If
-# no complete cycle is found, it scans the last 24 hours again for any complete
-# unsucceeded cycle. For HybridVar, a cycle is complete only when both ensemble
+# no complete cycle is found, it scans the last 48 hours again for any complete
+# unsucceeded cycles, up to NUMBER_OF_CYCLES_TO_BE_PROCESSED. For HybridVar, a
+# cycle is complete only when both ensemble
 # and control restart files are present. History records are kept sorted by
 # cycle, so backfilled cycles do not leave the history file out of order.
 #
-# The per-invocation monitor log is written as:
+# The per-invocation summary monitor log is written as:
 #
 #   ${branch_baserundir}/monitor_enspath_${timestamp}.status
 #
-# The monitor log records this wrapper's decisions and receives stdout/stderr
-# from the branch driver script.
+# The summary monitor records this wrapper's decisions. Each launched cycle gets
+# a separate driver-output monitor log:
+#
+#   ${branch_baserundir}/monitor_enspath_${timestamp}_${cycle}.status
 #
 # To force a branch to begin at a target cycle, write the previous cycle as a
 # SUCCESS entry in that branch's history file. Example for HybridVar beginning
@@ -40,6 +47,10 @@
 #   FORCE_CLEAN_LOCKS=TRUE RUN_BRANCH=HybridVar ./DRIVER_analysis_auto.sh
 #   FORCE_CLEAN_LOCKS=TRUE RUN_BRANCH=GETKF ./DRIVER_analysis_auto.sh
 #   FORCE_CLEAN_LOCKS=TRUE RUN_BRANCH=both ./DRIVER_analysis_auto.sh
+#
+# To launch up to three ready HybridVar cycles concurrently:
+#
+#   NUMBER_OF_CYCLES_TO_BE_PROCESSED=3 RUN_BRANCH=HybridVar ./DRIVER_analysis_auto.sh
 
 set -euo pipefail
 if [[ "${TRACE_AUTO:-FALSE}" == "TRUE" ]]; then
@@ -61,13 +72,17 @@ driver_script=${DRIVER_SCRIPT:-${script_dir}/DRIVER_analysis.sh}
 driver_HybridVar_script=${DRIVER_HYBRIDVAR_SCRIPT:-${script_dir}/DRIVER_HybridVar_analysis.sh}
 lockfiles_acquired=()
 ensemble_size=${ENSEMBLE_SIZE:-30}
+number_of_cycles_to_be_processed=${NUMBER_OF_CYCLES_TO_BE_PROCESSED:-1}
 run_branch_selection=${RUN_BRANCH:-${RUN_BRNACH:-HybridVar}}
-echo RUN_BRANCH_SELECTION is $run_branch_selection
 
 source "${script_dir}/scripts/driver_analysis_common.sh"
 
 if ! [[ "${ensemble_size}" =~ ^[0-9]+$ ]] || [[ "${ensemble_size}" -lt 1 ]]; then
     echo "ERROR: ENSEMBLE_SIZE must be a positive integer: ${ensemble_size}" >&2
+    exit 1
+fi
+if ! [[ "${number_of_cycles_to_be_processed}" =~ ^[0-9]+$ ]] || [[ "${number_of_cycles_to_be_processed}" -lt 1 ]]; then
+    echo "ERROR: NUMBER_OF_CYCLES_TO_BE_PROCESSED must be a positive integer: ${number_of_cycles_to_be_processed}" >&2
     exit 1
 fi
 
@@ -226,9 +241,11 @@ scan_cycle_range_for_work() {
     local branch_name="$2"
     local start_cycle="$3"
     local end_cycle="$4"
+    local max_cycles="$5"
     local cycle="${start_cycle}"
     local cycle_epoch
     local end_epoch
+    local found=0
 
     cycle_epoch=$(cycle_to_epoch "${cycle}") || return 1
     end_epoch=$(cycle_to_epoch "${end_cycle}") || return 1
@@ -236,23 +253,28 @@ scan_cycle_range_for_work() {
     while [[ "${cycle_epoch}" -le "${end_epoch}" ]]; do
         if ! cycle_is_successful "${history_file}" "${cycle}" && cycle_is_ready_for_branch "${cycle}" "${branch_name}"; then
             echo "${cycle}"
-            return 0
+            found=$((found + 1))
+            if [[ "${found}" -ge "${max_cycles}" ]]; then
+                return 0
+            fi
         fi
         cycle=$(increment_cycle "${cycle}") || return 1
         cycle_epoch=$(cycle_to_epoch "${cycle}") || return 1
     done
 
-    return 1
+    [[ "${found}" -gt 0 ]]
 }
 
-get_next_cycle_to_process() {
+get_cycles_to_process() {
     local history_file="$1"
     local branch_name="$2"
+    local max_cycles="$3"
     local last_processed_cycle
     local current_cycle
     local next_cycle
     local rescan_start_cycle
     local cycle
+    local found=0
 
     current_cycle=$(date -u +%Y%m%d%H)
 
@@ -262,21 +284,25 @@ get_next_cycle_to_process() {
                 && ! cycle_is_successful "${history_file}" "${cycle}" \
                 && cycle_is_ready_for_branch "${cycle}" "${branch_name}"; then
                 echo "${cycle}"
-                return 0
+                found=$((found + 1))
+                if [[ "${found}" -ge "${max_cycles}" ]]; then
+                    return 0
+                fi
             fi
         # Reverse sort ensures the first valid match is the latest complete cycle.
         done < <(find "${rrfspath}" -mindepth 2 -maxdepth 2 -type d -regextype posix-extended \
             -regex ".*/enkfrrfs\.[0-9]{8}/[0-9]{2}" | sort -r)
-        return 1
+        [[ "${found}" -gt 0 ]]
+        return
     fi
 
     next_cycle=$(increment_cycle "${last_processed_cycle}") || return 1
-    if scan_cycle_range_for_work "${history_file}" "${branch_name}" "${next_cycle}" "${current_cycle}"; then
+    if scan_cycle_range_for_work "${history_file}" "${branch_name}" "${next_cycle}" "${current_cycle}" "${max_cycles}"; then
         return 0
     fi
 
-    rescan_start_cycle=$(offset_cycle "${current_cycle}" -24) || return 1
-    if scan_cycle_range_for_work "${history_file}" "${branch_name}" "${rescan_start_cycle}" "${current_cycle}"; then
+    rescan_start_cycle=$(offset_cycle "${current_cycle}" -48) || return 1
+    if scan_cycle_range_for_work "${history_file}" "${branch_name}" "${rescan_start_cycle}" "${current_cycle}" "${max_cycles}"; then
         return 0
     fi
 
@@ -431,7 +457,18 @@ run_branch() {
     local next_cycle
     local next_enspath
     local next_controlpath
-    local controlpath
+    local cycle_status_file
+    local selected_cycles_csv
+    local branch_cycle_limit="${number_of_cycles_to_be_processed}"
+    local worker_pid
+    local worker_rc
+    local i
+    local launched=0
+    local failed=0
+    local -a selected_cycles
+    local -a worker_pids
+    local -a worker_cycles
+    local -a worker_status_files
     local -a driver_cmd
 
     if ! initialize_branch "${branch_name}" "${branch_baserundir}" "${branch_cycle_history}"; then
@@ -439,16 +476,22 @@ run_branch() {
     fi
     log "${branch_status_file}" "${branch_name}" "Monitor log for this invocation: ${branch_status_file}"
     log "${branch_status_file}" "${branch_name}" "Auto wrapper working directory: $(pwd)"
+    log "${branch_status_file}" "${branch_name}" "RUN_BRANCH selection: ${run_branch_selection}"
+    log "${branch_status_file}" "${branch_name}" "Requested NUMBER_OF_CYCLES_TO_BE_PROCESSED: ${number_of_cycles_to_be_processed}"
 
     if [[ ! -x "${branch_driver_script}" ]]; then
         log "${branch_status_file}" "${branch_name}" "ERROR: DRIVER script not found or not executable: ${branch_driver_script}; see monitor log ${branch_status_file}"
         return 1
     fi
+    if [[ "${branch_name}" == "GETKF" && "${number_of_cycles_to_be_processed}" -gt 1 ]]; then
+        branch_cycle_limit=1
+        log "${branch_status_file}" "${branch_name}" "GETKF concurrent multi-cycle launch is not enabled yet; limiting this branch to one cycle."
+    fi
 
     if last_success_cycle=$(get_last_processed_cycle "${branch_cycle_history}"); then
         candidate_cycle=$(increment_cycle "${last_success_cycle}")
         current_cycle=$(date -u +%Y%m%d%H)
-        rescan_start_cycle=$(offset_cycle "${current_cycle}" -24)
+        rescan_start_cycle=$(offset_cycle "${current_cycle}" -48)
         log "${branch_status_file}" "${branch_name}" "Last successful cycle in history: ${last_success_cycle}; scanning candidate cycles ${candidate_cycle} through ${current_cycle}"
         log "${branch_status_file}" "${branch_name}" "If no complete unsucceeded cycle is found in that range, rescanning ${rescan_start_cycle} through ${current_cycle}"
     else
@@ -456,58 +499,74 @@ run_branch() {
         log "${branch_status_file}" "${branch_name}" "No successful cycle found in history; scanning upstream restart directories for the latest complete cycle."
     fi
 
-    if ! next_cycle=$(get_next_cycle_to_process "${branch_cycle_history}" "${branch_name}"); then
-        next_cycle=""
-    fi
-    if [[ -z "${next_cycle}" ]]; then
+    mapfile -t selected_cycles < <(get_cycles_to_process "${branch_cycle_history}" "${branch_name}" "${branch_cycle_limit}")
+    if [[ "${#selected_cycles[@]}" -eq 0 ]]; then
         if [[ -n "${candidate_cycle}" ]]; then
-            log "${branch_status_file}" "${branch_name}" "No complete unsucceeded cycles found in the forward scan or the 24-hour rescan window."
+            log "${branch_status_file}" "${branch_name}" "No complete unsucceeded cycles found in the forward scan or the 48-hour rescan window."
         else
             log "${branch_status_file}" "${branch_name}" "No new cycles with complete restart files found during upstream scan."
         fi
         return 0
     fi
 
-    next_enspath="${rrfspath}/enkfrrfs.${next_cycle:0:8}/${next_cycle:8:2}"
-    log "${branch_status_file}" "${branch_name}" "Found next cycle to process: ${next_cycle} (${next_enspath})"
-
-    if ! validate_restart_files "${next_enspath}" "${branch_status_file}" "${branch_name}"; then
-        log "${branch_status_file}" "${branch_name}" "Not all required files are available yet for cycle ${next_cycle}. Will retry on next run."
+    selected_cycles_csv=$(IFS=,; echo "${selected_cycles[*]}")
+    log "${branch_status_file}" "${branch_name}" "Selected ${#selected_cycles[@]} ready cycle(s) to process concurrently: ${selected_cycles_csv}"
+    if ! acquire_lock "${branch_lockfile}" "${selected_cycles_csv}" "${branch_status_file}" "${branch_name}"; then
         return 0
     fi
-    log "${branch_status_file}" "${branch_name}" "All required files are present for cycle ${next_cycle}"
 
-    if [[ "${branch_name}" == "HybridVar" ]]; then
-        next_controlpath="${rrfspath}/rrfs.${next_cycle:0:8}/${next_cycle:8:2}"
-        if ! validate_control_restart_files "${next_controlpath}" "${branch_status_file}" "${branch_name}"; then
-            log "${branch_status_file}" "${branch_name}" "Control forecast restart files are not complete yet for cycle ${next_cycle}. Will retry on next run."
-            return 0
+    for next_cycle in "${selected_cycles[@]}"; do
+        next_enspath="${rrfspath}/enkfrrfs.${next_cycle:0:8}/${next_cycle:8:2}"
+        next_controlpath="XXXX_not_used"
+        cycle_status_file="${branch_baserundir}/monitor_enspath_${timestamp}_${next_cycle}.status"
+        log "${branch_status_file}" "${branch_name}" "Preparing cycle ${next_cycle}; cycle-specific monitor log: ${cycle_status_file}"
+
+        if ! validate_restart_files "${next_enspath}" "${cycle_status_file}" "${branch_name}"; then
+            log "${branch_status_file}" "${branch_name}" "Skipping cycle ${next_cycle}: member restart files are no longer complete. Will retry on next run."
+            continue
         fi
-        log "${branch_status_file}" "${branch_name}" "All required control forecast files are present for cycle ${next_cycle}"
-    fi
+        if [[ "${branch_name}" == "HybridVar" ]]; then
+            next_controlpath="${rrfspath}/rrfs.${next_cycle:0:8}/${next_cycle:8:2}"
+            if ! validate_control_restart_files "${next_controlpath}" "${cycle_status_file}" "${branch_name}"; then
+                log "${branch_status_file}" "${branch_name}" "Skipping cycle ${next_cycle}: control restart files are no longer complete. Will retry on next run."
+                continue
+            fi
+        fi
 
-    if ! acquire_lock "${branch_lockfile}" "${next_cycle}" "${branch_status_file}" "${branch_name}"; then
-        return 0
-    fi
+        log "${branch_status_file}" "${branch_name}" "Starting ${branch_driver_script} for cycle ${next_cycle}; driver output: ${cycle_status_file}"
+        (
+            trap - EXIT INT TERM
+            if [[ "${TRACE_DRIVER:-FALSE}" == "TRUE" ]]; then
+                driver_cmd=(bash -x "${branch_driver_script}" "${next_enspath}" "${next_controlpath}")
+            else
+                driver_cmd=(bash "${branch_driver_script}" "${next_enspath}" "${next_controlpath}")
+            fi
+            "${driver_cmd[@]}" >> "${cycle_status_file}" 2>&1
+        ) &
+        worker_pids+=("$!")
+        worker_cycles+=("${next_cycle}")
+        worker_status_files+=("${cycle_status_file}")
+        launched=$((launched + 1))
+    done
 
-    log "${branch_status_file}" "${branch_name}" "Starting ${branch_driver_script} for cycle ${next_cycle}; driver output will be appended to ${branch_status_file}"
-    if [[ "${TRACE_DRIVER:-FALSE}" == "TRUE" ]]; then
-        driver_cmd=(bash -x "${branch_driver_script}" "${next_enspath}" "${next_controlpath}")
-    else
-        driver_cmd=(bash "${branch_driver_script}" "${next_enspath}"  "${next_controlpath:-XXXX_not_used}")
-    fi
+    log "${branch_status_file}" "${branch_name}" "Launched ${launched} cycle driver(s); waiting for completion."
+    for i in "${!worker_pids[@]}"; do
+        worker_pid="${worker_pids[$i]}"
+        next_cycle="${worker_cycles[$i]}"
+        cycle_status_file="${worker_status_files[$i]}"
+        if wait "${worker_pid}"; then
+            log "${branch_status_file}" "${branch_name}" "DRIVER completed successfully for cycle ${next_cycle}; driver output: ${cycle_status_file}"
+            record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "SUCCESS"
+        else
+            worker_rc=$?
+            log "${branch_status_file}" "${branch_name}" "DRIVER failed for cycle ${next_cycle} with status ${worker_rc}; leaving cycle unprocessed for retry. Driver output: ${cycle_status_file}"
+            record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "FAILED"
+            failed=1
+        fi
+    done
 
-    if "${driver_cmd[@]}" >> "${branch_status_file}" 2>&1; then
-        log "${branch_status_file}" "${branch_name}" "DRIVER completed successfully for cycle ${next_cycle}; see monitor log ${branch_status_file}"
-        record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "SUCCESS"
-        release_lock "${branch_lockfile}"
-        return 0
-    fi
-
-    log "${branch_status_file}" "${branch_name}" "DRIVER failed for cycle ${next_cycle}; leaving cycle unprocessed for retry. Driver output is in ${branch_status_file}"
-    record_processed_cycle "${branch_cycle_history}" "${next_cycle}" "FAILED"
     release_lock "${branch_lockfile}"
-    return 1
+    return "${failed}"
 }
 
 rc=0

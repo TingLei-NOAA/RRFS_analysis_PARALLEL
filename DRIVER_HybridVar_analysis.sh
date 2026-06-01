@@ -206,7 +206,11 @@ echo "DRIVER_HybridVar_analysis.sh repository log directory: ${currdir}/logs"
 
 # Export the variables we will need in other tasks
 envfile=HybridVar_run.env
-envfile_abs=${currdir}/${envfile}
+envfile_abs=${baserundir}/HybridVar_run.${YYYYMMDD}${HH}.$$.env
+cleanup_temp_envfile() {
+    rm -f "${envfile_abs:-}"
+}
+trap cleanup_temp_envfile EXIT
 cat > "${envfile_abs}" << EOF
 RDASApp='${RDASApp}'
 rrfsworkflow='${rrfsworkflow}'
@@ -256,6 +260,7 @@ job_envfile="${cycle_logdir}/${envfile}"
 summary_status="${cycle_logdir}/summary.status"
 rm -f "${RADAR_LOG}" "${BUFR_LOG}" "${HybridVar_LOG}" "${VERIF_LOG}"
 cp "${envfile_abs}" "${job_envfile}"
+rm -f "${envfile_abs}"
 cp "${job_envfile}" ${bufrdir}
 cp "${job_envfile}" ${mrmsdir}
 cp "${job_envfile}" ${anldir}
@@ -269,6 +274,10 @@ source_hh="${source_cycle##*/}"
 source_date_dir="${source_cycle%/*}"
 source_yyyymmdd="${source_date_dir##*.}"
 source_cycle="${source_yyyymmdd}${source_hh}"
+debug_hybridvar_script="${cycle_logdir}/sub_hybridvar.sh"
+debug_verification_script="${cycle_logdir}/sub_verification.sh"
+debug_hybridvar_convenience_copy="${currdir}/sub_hybridvar_${source_cycle}.sh"
+debug_verification_convenience_copy="${currdir}/sub_verification_${source_cycle}.sh"
 git_rev=$(git -C "${currdir}" rev-parse --short HEAD 2>/dev/null || echo UNKNOWN)
 if git_status_short=$(git -C "${currdir}" status --short 2>/dev/null); then
     git_dirty_count=$(printf "%s\n" "${git_status_short}" | wc -l | awk '{print $1}')
@@ -287,8 +296,10 @@ fi
     echo "verifdir=${verifdir}"
     echo "cycle_logdir=${cycle_logdir}"
     echo "envfile=${job_envfile}"
-    echo "debug_hybridvar_script=${debug_hybridvar_script:-${cycle_logdir}/sub_hybridvar.sh}"
-    echo "debug_verification_script=${debug_verification_script:-${cycle_logdir}/sub_verification.sh}"
+    echo "debug_hybridvar_script=${debug_hybridvar_script}"
+    echo "debug_verification_script=${debug_verification_script}"
+    echo "debug_hybridvar_convenience_copy=${debug_hybridvar_convenience_copy}"
+    echo "debug_verification_convenience_copy=${debug_verification_convenience_copy}"
     echo "driver_script=${script_dir}/DRIVER_HybridVar_analysis.sh"
     echo "git_rev=${git_rev}"
     echo "git_dirty_count=${git_dirty_count}"
@@ -314,8 +325,6 @@ echo "  bufr PBS log: ${BUFR_LOG}"
 echo "  HybridVar PBS log: ${HybridVar_LOG}"
 echo "  verif PBS log: ${VERIF_LOG}"
 echo "  HybridVar internal pgmout: ${anldir}/pgm.log"
-debug_hybridvar_script="${cycle_logdir}/sub_hybridvar.sh"
-debug_verification_script="${cycle_logdir}/sub_verification.sh"
 
 # Create radar observations
 echo "Submitting radar task: ${RADAR_SCRIPT}"
@@ -389,9 +398,9 @@ cd "${currdir}"
 exec bash "${HYBRIDVAR_SCRIPT}"
 EOF
 chmod +x "${debug_hybridvar_script}"
-cp "${debug_hybridvar_script}" "${currdir}/sub_hybridvar.sh"
+cp "${debug_hybridvar_script}" "${debug_hybridvar_convenience_copy}"
 echo "Wrote debug HybridVar PBS script: ${debug_hybridvar_script}"
-echo "Convenience copy: ${currdir}/sub_hybridvar.sh"
+echo "Cycle-specific convenience copy: ${debug_hybridvar_convenience_copy}"
 
 echo "Submitting HybridVar analysis task: ${HYBRIDVAR_SCRIPT}"
 echo "  PBS stdout/stderr: ${HybridVar_LOG}"
@@ -447,9 +456,9 @@ cd "${currdir}"
 exec bash "${script_dir}/scripts/exrrfs_compare_HybridVar_jedi_gsi.sh"
 EOF
 chmod +x "${debug_verification_script}"
-cp "${debug_verification_script}" "${currdir}/sub_verification.sh"
+cp "${debug_verification_script}" "${debug_verification_convenience_copy}"
 echo "Wrote debug verification PBS script: ${debug_verification_script}"
-echo "Convenience copy: ${currdir}/sub_verification.sh"
+echo "Cycle-specific convenience copy: ${debug_verification_convenience_copy}"
 
 # Run the verification after the GETKF job completes successfully
 echo "Submitting verification task: ${VERIF_SCRIPT}"
