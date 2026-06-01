@@ -155,7 +155,7 @@ GETKF_LOG="getkf.log"
 HybridVar_JOB_NAME="na3km_hybrid"
 HybridVar_SELECT="62:mpiprocs=128:ompthreads=1:ncpus=128"
 HybridVar_WALLTIME="02:00:00"
-HybridVar_PLACE="vscatter"
+HybridVar_PLACE="vscatter:exclhost"
 HybridVar_LOG="HybridVar.log"
 
 # GSI verification
