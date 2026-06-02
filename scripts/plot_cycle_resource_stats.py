@@ -66,6 +66,15 @@ def parse_args() -> argparse.Namespace:
         default=3,
         help="Maximum placeholder positions used to display a missing-cycle gap.",
     )
+    parser.add_argument(
+        "--gsi-mpi-ranks",
+        type=int,
+        default=480,
+        help=(
+            "GSI MPI rank count used to estimate total GSI memory as "
+            "reported max RSS per process multiplied by this value. Default: 480"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -135,14 +144,16 @@ def gather_stats(stats_dir: Path) -> List[CycleStats]:
     return sorted(rows, key=lambda row: row.cycle)
 
 
-def write_csv(rows: List[CycleStats], output_file: Path) -> None:
+def write_csv(rows: List[CycleStats], output_file: Path, gsi_mpi_ranks: int) -> None:
     fields = (
         "cycle",
         "gsi_file",
         "jedi_file",
         "gsi_wall_seconds",
         "jedi_runtime_seconds",
-        "gsi_max_rss_gb",
+        "gsi_reported_max_rss_gb",
+        "gsi_estimated_total_memory_gb",
+        "gsi_mpi_ranks_used_for_estimate",
         "jedi_total_memory_gb",
         "jedi_min_task_memory_gb",
         "jedi_max_task_memory_gb",
@@ -158,7 +169,13 @@ def write_csv(rows: List[CycleStats], output_file: Path) -> None:
                     "jedi_file": row.jedi_file.name if row.jedi_file else "",
                     "gsi_wall_seconds": row.gsi_wall_seconds,
                     "jedi_runtime_seconds": row.jedi_runtime_seconds,
-                    "gsi_max_rss_gb": row.gsi_max_rss_gb,
+                    "gsi_reported_max_rss_gb": row.gsi_max_rss_gb,
+                    "gsi_estimated_total_memory_gb": (
+                        row.gsi_max_rss_gb * gsi_mpi_ranks
+                        if row.gsi_max_rss_gb is not None
+                        else None
+                    ),
+                    "gsi_mpi_ranks_used_for_estimate": gsi_mpi_ranks,
                     "jedi_total_memory_gb": row.jedi_total_memory_gb,
                     "jedi_min_task_memory_gb": row.jedi_min_task_memory_gb,
                     "jedi_max_task_memory_gb": row.jedi_max_task_memory_gb,
@@ -198,7 +215,6 @@ def build_plot_series(
         "gsi_runtime": [],
         "jedi_runtime": [],
         "gsi_rss": [],
-        "jedi_task_max": [],
         "jedi_total_memory": [],
     }
     previous = None
@@ -209,13 +225,14 @@ def build_plot_series(
         values["gsi_runtime"].append(row.gsi_wall_seconds)
         values["jedi_runtime"].append(row.jedi_runtime_seconds)
         values["gsi_rss"].append(row.gsi_max_rss_gb)
-        values["jedi_task_max"].append(row.jedi_max_task_memory_gb)
         values["jedi_total_memory"].append(row.jedi_total_memory_gb)
         previous = row.cycle
     return labels, values
 
 
-def plot_stats(rows: List[CycleStats], output_file: Path, max_gap_markers: int) -> None:
+def plot_stats(
+    rows: List[CycleStats], output_file: Path, max_gap_markers: int, gsi_mpi_ranks: int
+) -> None:
     try:
         import matplotlib
 
@@ -226,7 +243,7 @@ def plot_stats(rows: List[CycleStats], output_file: Path, max_gap_markers: int) 
 
     labels, values = build_plot_series(rows, max_gap_markers)
     x = list(range(len(labels)))
-    fig, axes = plt.subplots(3, 1, figsize=(max(12, len(labels) * 0.38), 12), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(max(12, len(labels) * 0.38), 9), sharex=True)
 
     axes[0].plot(x, values["gsi_runtime"], marker="o", label="GSI wall time")
     axes[0].plot(x, values["jedi_runtime"], marker="o", label="JEDI runtime")
@@ -234,21 +251,31 @@ def plot_stats(rows: List[CycleStats], output_file: Path, max_gap_markers: int) 
     axes[0].set_title("GSI and JEDI Runtime by Analysis Cycle")
     axes[0].legend()
 
-    axes[1].plot(x, values["gsi_rss"], marker="o", label="GSI max RSS")
-    axes[1].plot(x, values["jedi_task_max"], marker="o", label="JEDI max memory per task")
+    gsi_estimated_total_memory = [
+        value * gsi_mpi_ranks if value is not None else None
+        for value in values["gsi_rss"]
+    ]
+    axes[1].plot(
+        x,
+        gsi_estimated_total_memory,
+        marker="o",
+        label=f"GSI estimated total memory: reported max RSS x {gsi_mpi_ranks} MPI ranks",
+    )
+    axes[1].plot(
+        x,
+        values["jedi_total_memory"],
+        marker="o",
+        label="JEDI reported aggregate memory across MPI tasks",
+    )
     axes[1].set_ylabel("GB")
-    axes[1].set_title("Task-Level Memory Indicators")
+    axes[1].set_title("Total Memory Usage")
     axes[1].legend()
-
-    axes[2].plot(x, values["jedi_total_memory"], marker="o", color="tab:green")
-    axes[2].set_ylabel("GB")
-    axes[2].set_title("JEDI Aggregate Memory Across MPI Tasks")
-    axes[2].set_xlabel("Cycle (UTC)")
+    axes[1].set_xlabel("Cycle (UTC)")
 
     for axis in axes:
         axis.grid(True, alpha=0.3)
-    axes[2].set_xticks(x)
-    axes[2].set_xticklabels(labels, rotation=70, ha="right", fontsize=8)
+    axes[1].set_xticks(x)
+    axes[1].set_xticklabels(labels, rotation=70, ha="right", fontsize=8)
     fig.tight_layout()
     fig.savefig(output_file, dpi=160)
     plt.close(fig)
@@ -258,6 +285,9 @@ def main() -> int:
     args = parse_args()
     if args.max_gap_markers < 1:
         print("ERROR: --max-gap-markers must be at least 1", file=sys.stderr)
+        return 2
+    if args.gsi_mpi_ranks < 1:
+        print("ERROR: --gsi-mpi-ranks must be at least 1", file=sys.stderr)
         return 2
     if not args.stats_dir.is_dir():
         print(f"ERROR: stats directory does not exist: {args.stats_dir}", file=sys.stderr)
@@ -272,13 +302,17 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_file = output_dir / f"{args.prefix}.csv"
     png_file = output_dir / f"{args.prefix}.png"
-    write_csv(rows, csv_file)
-    plot_stats(rows, png_file, args.max_gap_markers)
+    write_csv(rows, csv_file, args.gsi_mpi_ranks)
+    plot_stats(rows, png_file, args.max_gap_markers, args.gsi_mpi_ranks)
 
     missing_jedi = [row.cycle_text for row in rows if row.jedi_file is None]
     print(f"Parsed {len(rows)} GSI cycle files from {args.stats_dir}")
     print(f"Wrote CSV:  {csv_file}")
     print(f"Wrote plot: {png_file}")
+    print(
+        "GSI estimated total memory uses reported max RSS x "
+        f"{args.gsi_mpi_ranks} MPI ranks"
+    )
     if missing_jedi:
         print(f"Missing JEDI counterparts for {len(missing_jedi)} cycle(s): {', '.join(missing_jedi)}")
     return 0
