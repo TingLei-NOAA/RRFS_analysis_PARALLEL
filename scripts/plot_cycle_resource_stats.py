@@ -1,5 +1,26 @@
 #!/usr/bin/env python3
-"""Plot GSI and JEDI resource usage by cycle from saved workflow outputs."""
+"""Plot GSI and JEDI resource usage by cycle from saved workflow outputs.
+
+Example using the default GSI MPI rank count of 480:
+
+    python3 scripts/plot_cycle_resource_stats.py \
+        /u/ting.lei/dr-3kmNA-parallel/dr_save_stats
+
+Example overriding the GSI MPI rank count:
+
+    python3 scripts/plot_cycle_resource_stats.py \
+        /u/ting.lei/dr-3kmNA-parallel/dr_save_stats \
+        --gsi-mpi-ranks 512
+
+By default, the script writes:
+
+    <stats_dir>/plots/cycle_resource_stats.csv
+    <stats_dir>/plots/cycle_resource_stats.png
+
+The GSI total-memory line is an estimate:
+
+    GSI reported maximum RSS x --gsi-mpi-ranks
+"""
 
 from __future__ import annotations
 
