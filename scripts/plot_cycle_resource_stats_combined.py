@@ -150,7 +150,7 @@ def plot_combined(rows, output_file: Path, max_gap_markers: int, gsi_mpi_ranks: 
             gsi_memory_line,
         ],
         loc="upper center",
-        bbox_to_anchor=(0.5, -0.18),
+        bbox_to_anchor=(0.5, -0.2),
         ncol=2,
         frameon=True,
     )
