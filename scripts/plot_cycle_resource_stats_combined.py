@@ -150,12 +150,12 @@ def plot_combined(rows, output_file: Path, max_gap_markers: int, gsi_mpi_ranks: 
             gsi_memory_line,
         ],
         loc="upper center",
-        bbox_to_anchor=(0.5, -0.2),
+        bbox_to_anchor=(0.5, 0.92),
         ncol=2,
         frameon=True,
     )
 
-    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig.tight_layout()
     fig.savefig(output_file, dpi=160)
     plt.close(fig)
 
