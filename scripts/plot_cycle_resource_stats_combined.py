@@ -149,10 +149,13 @@ def plot_combined(rows, output_file: Path, max_gap_markers: int, gsi_mpi_ranks: 
             jedi_memory_line,
             gsi_memory_line,
         ],
-        loc="best",
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=2,
+        frameon=True,
     )
 
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
     fig.savefig(output_file, dpi=160)
     plt.close(fig)
 
