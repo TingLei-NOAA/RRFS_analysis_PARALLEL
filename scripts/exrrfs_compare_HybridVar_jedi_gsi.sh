@@ -26,8 +26,8 @@ pgmout=${anldir}/pgm.log
 ### Begin executable code ###
 #############################
 
-echo "Changing to HybridVar analysis directory: ${anldir}"
-cd ${anldir}
+echo "Changing to HybridVar verif directory: ${verifdir}"
+cd ${verifdir}
 echo "Current working directory after cd: $(pwd)"
 set +x
 #source ${rrfsworkflow}/versions/run.ver
@@ -112,7 +112,10 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
   mkdir -p dr-cmp_rundir 
   cd dr-cmp_rundir
   cp ${gsianl_dir}/diag*conv*nc* .
-  cp $anldir/j*diag*nc* .   # jedi diag outptu 
+#cltorg  cp $anldir/j*diag*nc* .   # jedi diag outptu 
+  jdiag_dir=./dir-jdiag_dir
+  mkdir -p ${jdiag_dir}
+  cp $anldir/j*diag*nc* ${jdiag_dir}/ # jedi diag outptu 
 
   gzip -df *.gz
   ${script_dir}/run_convert_gsi_diag_to_gdiag.sh $CDATE .
@@ -122,7 +125,7 @@ if [ $status -ne 0 ]; then
     echo "ERROR: run_convert_gsi_diag_to_gdiag.sh failed with exit code $status"
     exit $status
 fi
-  python ${rdas_rrfs_script}/diff_profile_rms_bias_fit.py GSI JEDI ./jdiag*.nc  $jdiag_dir/jdiag*.nc
+  python ${rdas_rrfs_script}/diff_profile_rms_bias_fit.py GSI JEDI ./jdiag*.nc --  ${jdiag_dir}/jdiag*.nc
 
 
     
