@@ -264,13 +264,17 @@ def plot_stats(
 
     labels, values = build_plot_series(rows, max_gap_markers)
     x = list(range(len(labels)))
+    title_size = 22
+    label_size = 20
+    tick_size = 16
+    legend_size = 16
     fig, axes = plt.subplots(2, 1, figsize=(max(12, len(labels) * 0.38), 9), sharex=True)
 
     axes[0].plot(x, values["gsi_runtime"], marker="o", label="GSI wall time")
     axes[0].plot(x, values["jedi_runtime"], marker="o", label="JEDI runtime")
-    axes[0].set_ylabel("Seconds")
-    axes[0].set_title("GSI and JEDI Runtime by Analysis Cycle")
-    axes[0].legend()
+    axes[0].set_ylabel("Seconds", fontsize=label_size)
+    axes[0].set_title("GSI and JEDI Runtime by Analysis Cycle", fontsize=title_size)
+    axes[0].legend(fontsize=legend_size)
 
     gsi_estimated_total_memory = [
         value * gsi_mpi_ranks if value is not None else None
@@ -288,15 +292,16 @@ def plot_stats(
         marker="o",
         label="JEDI reported aggregate memory across MPI tasks",
     )
-    axes[1].set_ylabel("GB")
-    axes[1].set_title("Total Memory Usage")
-    axes[1].legend()
-    axes[1].set_xlabel("Cycle (UTC)")
+    axes[1].set_ylabel("GB", fontsize=label_size)
+    axes[1].set_title("Total Memory Usage", fontsize=title_size)
+    axes[1].legend(fontsize=legend_size)
+    axes[1].set_xlabel("Cycle (UTC)", fontsize=label_size)
 
     for axis in axes:
         axis.grid(True, alpha=0.3)
+        axis.tick_params(axis="both", labelsize=tick_size)
     axes[1].set_xticks(x)
-    axes[1].set_xticklabels(labels, rotation=70, ha="right", fontsize=8)
+    axes[1].set_xticklabels(labels, rotation=70, ha="right", fontsize=tick_size)
     fig.tight_layout()
     fig.savefig(output_file, dpi=160)
     plt.close(fig)

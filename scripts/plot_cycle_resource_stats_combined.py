@@ -91,6 +91,10 @@ def plot_combined(rows, output_file: Path, max_gap_markers: int, gsi_mpi_ranks: 
 
     labels, values = build_plot_series(rows, max_gap_markers)
     x = list(range(len(labels)))
+    title_size = 22
+    label_size = 20
+    tick_size = 16
+    legend_size = 16
     gsi_estimated_total_memory = [
         value * gsi_mpi_ranks if value is not None else None
         for value in values["gsi_rss"]
@@ -132,16 +136,20 @@ def plot_combined(rows, output_file: Path, max_gap_markers: int, gsi_mpi_ranks: 
         label=f"GSI estimated total memory: max RSS x {gsi_mpi_ranks} ranks",
     )[0]
 
-    runtime_axis.set_title("GSI and JEDI Runtime and Total Memory by Analysis Cycle")
-    runtime_axis.set_xlabel("Cycle (UTC)")
-    runtime_axis.set_ylabel("Clock time (seconds)", color="tab:blue")
-    memory_axis.set_ylabel("Memory usage (GB)", color="tab:orange")
+    runtime_axis.set_title(
+        "GSI and JEDI Runtime and Total Memory by Analysis Cycle",
+        fontsize=title_size,
+    )
+    runtime_axis.set_xlabel("Cycle (UTC)", fontsize=label_size)
+    runtime_axis.set_ylabel("Clock time (seconds)", color="tab:blue", fontsize=label_size)
+    memory_axis.set_ylabel("Memory usage (GB)", color="tab:orange", fontsize=label_size)
+    runtime_axis.tick_params(axis="both", labelsize=tick_size)
     runtime_axis.tick_params(axis="y", colors="tab:blue")
-    memory_axis.tick_params(axis="y", colors="tab:orange")
+    memory_axis.tick_params(axis="y", colors="tab:orange", labelsize=tick_size)
     runtime_axis.grid(True, alpha=0.3)
 
     runtime_axis.set_xticks(x)
-    runtime_axis.set_xticklabels(labels, rotation=70, ha="right", fontsize=8)
+    runtime_axis.set_xticklabels(labels, rotation=70, ha="right", fontsize=tick_size)
     runtime_axis.legend(
         handles=[
             jedi_runtime_line,
@@ -153,6 +161,7 @@ def plot_combined(rows, output_file: Path, max_gap_markers: int, gsi_mpi_ranks: 
         bbox_to_anchor=(0.5, 0.92),
         ncol=2,
         frameon=True,
+        fontsize=legend_size,
     )
 
     fig.tight_layout()

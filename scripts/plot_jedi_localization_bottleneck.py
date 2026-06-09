@@ -245,6 +245,10 @@ def plot_stats(rows: List[JediCycleStats], output_file: Path, max_gap_markers: i
 
     labels, values = build_plot_series(rows, max_gap_markers)
     x = list(range(len(labels)))
+    title_size = 22
+    label_size = 20
+    tick_size = 16
+    legend_size = 16
     fig, axis = plt.subplots(figsize=(max(12, len(labels) * 0.38), 7))
 
     axis.plot(x, values["total_runtime"], marker="o", label="JEDI total runtime")
@@ -261,13 +265,18 @@ def plot_stats(rows: List[JediCycleStats], output_file: Path, max_gap_markers: i
         linestyle="--",
         label="Nested saber::mgbf::Covariance::multiply",
     )
-    axis.set_title("JEDI Localization Bottleneck by Analysis Cycle")
-    axis.set_xlabel("Cycle (UTC)")
-    axis.set_ylabel("Clock time (seconds)")
+    axis.set_title("JEDI Localization Bottleneck by Analysis Cycle", fontsize=title_size)
+    axis.set_xlabel("Cycle (UTC)", fontsize=label_size)
+    axis.set_ylabel("Clock time (seconds)", fontsize=label_size)
     axis.grid(True, alpha=0.3)
-    axis.legend(title="MGBF is included within Localization")
+    axis.tick_params(axis="both", labelsize=tick_size)
+    axis.legend(
+        title="MGBF is included within Localization",
+        fontsize=legend_size,
+        title_fontsize=legend_size,
+    )
     axis.set_xticks(x)
-    axis.set_xticklabels(labels, rotation=70, ha="right", fontsize=8)
+    axis.set_xticklabels(labels, rotation=70, ha="right", fontsize=tick_size)
 
     fig.tight_layout()
     fig.savefig(output_file, dpi=160)
