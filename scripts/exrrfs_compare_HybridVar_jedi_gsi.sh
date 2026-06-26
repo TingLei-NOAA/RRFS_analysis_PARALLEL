@@ -112,10 +112,32 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
   mkdir -p dr-cmp_rundir 
   cd dr-cmp_rundir
   cp ${gsianl_dir}/diag*conv*nc* .
+  cp ${gsianl_dir}/*fit* .
 #cltorg  cp $anldir/j*diag*nc* .   # jedi diag outptu 
   jdiag_dir=./dir-jdiag_dir
   mkdir -p ${jdiag_dir}
+  rundir=`pwd`
   cp $anldir/j*diag*nc* ${jdiag_dir}/ # jedi diag outptu 
+  cd $jdiag_dir
+  export JEDI_BUNDLE=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-jedi-bundle/jedi-bundle
+  export PYTHONPATH=${JEDI_BUNDLE}/ioda/src/python:${PYTHONPATH}
+  mkdir -p ../jdiag_merged
+
+  for first_file in *_0000.nc; do
+    ob_string="${first_file%_0000.nc}"
+    files=( "${ob_string}"_[0-9][0-9][0-9][0-9].nc )
+
+    echo "Merging ${ob_string}"
+
+    python ${JEDI_BUNDLE}/ioda/test/python/pyiodautils/test_file_merge_concat_method.py \
+      --outfile "../jdiag_merged/${ob_string}.nc" \
+      --infiles "${files[@]}" \
+    && rm -f "${files[@]}"
+  done
+
+
+
+  cd $rundir
 
   gzip -df *.gz
   ${script_dir}/run_convert_gsi_diag_to_gdiag.sh $CDATE .
@@ -125,7 +147,11 @@ if [ $status -ne 0 ]; then
     echo "ERROR: run_convert_gsi_diag_to_gdiag.sh failed with exit code $status"
     exit $status
 fi
-  python ${rdas_rrfs_script}/diff_profile_rms_bias_fit.py GSI JEDI ./jdiag*.nc --  ${jdiag_dir}/jdiag*.nc
+  python ${rdas_rrfs_script}/diff_profile_rms_bias_fit.py GSI JEDI ./jdiag*.nc --  jdiag_merged/jdiag*.nc
+dr_store_verif="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-hybrid-parallel-store"
+dr_cycle_store=${dr_store_verif}/$CDATE
+mkdir -p $dr_cycle_store
+cp -r ../dr-cmp_rundir $dr_cycle_store
 
 
     
