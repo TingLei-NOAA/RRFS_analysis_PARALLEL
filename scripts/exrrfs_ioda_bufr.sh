@@ -150,6 +150,20 @@ PYIODALIB=${dirs[0]}
 WXFLOWLIB=${RDASAPP_DIR}/sorc/wxflow/src
 export PYTHONPATH="${WXFLOWLIB}:${PYIODALIB}:${PYTHONPATH}"
 
+satwnd_list=(
+"ahi"
+"avhrr"
+"goes"
+"leogeo"
+"modis"
+"seviri"
+"viirs"
+)
+for sensor in "${satwnd_list[@]}"; do
+  cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/bufr2ioda_satwnd_amv_${sensor}.json .
+  cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/bufr2ioda_satwnd_amv_${sensor}.py .
+done
+
 cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/bufr2ioda_adpupa_prepbufr.json .
 cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/bufr2ioda_adpupa_prepbufr.py .
 cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/bufr2ioda_satwnd_amv_goes.json .
@@ -159,19 +173,17 @@ cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/bufr2ioda_gsrcsr.py .
 
 # generate a JSON w CDATE from the template and convert to IODA
 cp "${RDASAPP_DIR}"/rrfs-test/IODA/python/gen_bufr2ioda_json.py .
-which python
-python -V 
-python3 -V 
+
 # ADPUPA (surface pressure)
 cp -p ${FIX_JEDI}/ioda_empty.nc ioda_adpupa.nc
 ./gen_bufr2ioda_json.py -t bufr2ioda_adpupa_prepbufr.json -o bufr2ioda_adpupa_prepbufr_0.json
 ./bufr2ioda_adpupa_prepbufr.py -c bufr2ioda_adpupa_prepbufr_0.json >> $pgmout
 
 # SATWND
-cp -p ${FIX_JEDI}/ioda_empty_satwnd.nc ioda_satwnd.abi_goes-16.nc
-cp -p ${FIX_JEDI}/ioda_empty_satwnd.nc ioda_satwnd.abi_goes-18.nc
-./gen_bufr2ioda_json.py -t bufr2ioda_satwnd_amv_goes.json -o bufr2ioda_satwnd_amv_goes_0.json
-./bufr2ioda_satwnd_amv_goes.py -c bufr2ioda_satwnd_amv_goes_0.json >> $pgmout
+for sensor in "${satwnd_list[@]}"; do
+  ./gen_bufr2ioda_json.py -t bufr2ioda_satwnd_amv_${sensor}.json -o bufr2ioda_satwnd_amv_${sensor}_0.json
+  ./bufr2ioda_satwnd_amv_${sensor}.py -c bufr2ioda_satwnd_amv_${sensor}_0.json >> $pgmout
+done
 
 # Satellite Radiance
 if [ $DO_SATRAD == "TRUE" ]; then
