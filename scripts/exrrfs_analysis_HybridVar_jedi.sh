@@ -34,14 +34,17 @@ set +x
 #module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
 #module load run_enkfupdt_jedi.local
 jedi_bundle=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-jedi-bundle/jedi-bundle
+rdasapp_build_dir="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/build"
 moduledir="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/modulefiles"
 module use $moduledir
 module load RDAS/wcoss2.intel
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/cray/pe/mpich/8.1.19/ofi/intel/19.0/lib"
-export JEDI_LIBS="${jedi_bundle}/build/lib64:${jedi_bundle}/build/lib"
+#clt export JEDI_LIBS="${jedi_bundle}/build/lib64:${jedi_bundle}/build/lib"
+export rdasapp_LIBS="${rdasapp_build_dir}/lib64:${rdasapp_build_dir}/lib"
 #clt module load intel-oneapi-mkl intel-oneapi-compiler
 #export LD_LIBRARY_PATH="$JEDI_LIBS:$MKLROOT/lib/intel64:$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$JEDI_LIBS:$LD_LIBRARY_PATH"
+#export LD_LIBRARY_PATH="$JEDI_LIBS:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$rdasapp_LIBS:$LD_LIBRARY_PATH"
 
 ulimit -s unlimited
 ulimit -v unlimited
@@ -58,7 +61,7 @@ export MPICH_OFI_VERBOSE=1
 export MPICH_MPIIO_HINTS='*.tile1.nc:romio_cb_read=disable,...'
 
 
-export LD_LIBRARY_PATH="$JEDI_LIBS:$MKLROOT/lib/intel64:$LD_LIBRARY_PATH"
+#clt export LD_LIBRARY_PATH="$JEDI_LIBS:$MKLROOT/lib/intel64:$LD_LIBRARY_PATH"
 
 APRUN="mpiexec -l --line-buffer -n 1936 -ppn 32 --cpu-bind core --depth 4 --label -env LD_LIBRARY_PATH $LD_LIBRARY_PATH"
 
@@ -269,6 +272,7 @@ export pgm="fv3jedi_var.x"
 #jedi_exec="${EXECdir}/bin/${pgm}"
 jedi_exec="${RDASAPP_DIR}/build/bin/${pgm}"
 jedi_exec="${jedi_bundle}/build/bin/${pgm}"
+jedi_exec="${rdasapp_build_dir}/bin/${pgm}"
 cp "${jedi_exec}" "${anldir}/${pgm}"
 
 . prep_step
