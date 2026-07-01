@@ -181,6 +181,17 @@ cp -p ${FIX_JEDI}/ioda_empty.nc ioda_adpupa.nc
 ./bufr2ioda_adpupa_prepbufr.py -c bufr2ioda_adpupa_prepbufr_0.json >> $pgmout
 
 # SATWND
+# The OSDF reader (loadOsdfFromNetcdf) does NOT honor "missing file action: warn"
+# in the analysis YAML, so every satwnd file referenced there must physically
+# exist. Seed empty placeholders before conversion; sensors with data overwrite
+# them, and sensors absent this cycle (e.g. no GOES) keep an empty (readable)
+# file instead of causing the HybridVar analysis to abort with "No such file".
+# NOTE: keep this list in sync with the ioda_satwnd.*.nc obsfile entries in the
+# HybridVar analysis YAML.
+for f in abi_goes-18 abi_goes-19 ahi_h9 seviri_m9 seviri_m10; do
+  cp -p ${FIX_JEDI}/ioda_empty_satwnd.nc ioda_satwnd.${f}.nc
+done
+
 # Convert each satwind sensor independently. Several sensors (e.g. avhrr,
 # leogeo, modis, viirs) legitimately have no data in the CONUS satwnd dump and
 # make the converter exit non-zero with "No valid BUFR subsets were found".
