@@ -181,10 +181,25 @@ cp -p ${FIX_JEDI}/ioda_empty.nc ioda_adpupa.nc
 ./bufr2ioda_adpupa_prepbufr.py -c bufr2ioda_adpupa_prepbufr_0.json >> $pgmout
 
 # SATWND
+# Convert each satwind sensor independently. Several sensors (e.g. avhrr,
+# leogeo, modis, viirs) legitimately have no data in the CONUS satwnd dump and
+# make the converter exit non-zero with "No valid BUFR subsets were found".
+# Run under set +e so one empty sensor does not abort the whole task (and thus
+# skip later sensors such as goes/seviri), mirroring the prepbufr loop above.
+set +e
 for sensor in "${satwnd_list[@]}"; do
   ./gen_bufr2ioda_json.py -t bufr2ioda_satwnd_amv_${sensor}.json -o bufr2ioda_satwnd_amv_${sensor}_0.json
-  ./bufr2ioda_satwnd_amv_${sensor}.py -c bufr2ioda_satwnd_amv_${sensor}_0.json >> $pgmout
+  ./bufr2ioda_satwnd_amv_${sensor}.py -c bufr2ioda_satwnd_amv_${sensor}_0.json >> "$pgmout" 2>&1
+  err=$?
+  if [ $err -ne 0 ]; then
+    if tail -20 "$pgmout" | grep -qF "No valid BUFR subsets were found"; then
+      echo "WARNING: satwnd ${sensor}: no valid BUFR subsets in input. Skipping this sensor." >> "$pgmout"
+    else
+      echo "ERROR: satwnd ${sensor} failed with exit code $err" >> "$pgmout"
+    fi
+  fi
 done
+set -e
 
 # Satellite Radiance
 if [ $DO_SATRAD == "TRUE" ]; then
