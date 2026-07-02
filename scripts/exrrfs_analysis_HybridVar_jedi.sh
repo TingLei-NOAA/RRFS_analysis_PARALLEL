@@ -271,7 +271,7 @@ export OMP_NUM_THREADS=1
 export pgm="fv3jedi_var.x"
 #jedi_exec="${EXECdir}/bin/${pgm}"
 jedi_exec="${RDASAPP_DIR}/build/bin/${pgm}"
-jedi_exec="${rdasapp_build_dir}/bin/${pgm}"
+#cltorg jedi_exec="${rdasapp_build_dir}/bin/${pgm}"
 jedi_exec="${jedi_bundle}/build/bin/${pgm}"
 cp "${jedi_exec}" "${anldir}/${pgm}"
 
