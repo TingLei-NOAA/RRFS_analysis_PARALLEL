@@ -10,7 +10,8 @@ Usage:
 
 Behavior:
   - Scans only variables declared in /${grp}
-  - Skips variables named Location and dateTime
+  - Skips variables named Location, dateTime, and satelliteIdentifier
+    (satelliteIdentifier must stay integer for satwnd 'is_in' filters)
   - Skips variables already of type string, float, or double
   - Converts integer-like variables to float
   - Overwrites the input file by default unless -o is given
@@ -144,7 +145,11 @@ for var in "${vars[@]}"; do
   echo "==> Processing /${grp}/${var}"
 
   # Explicit exclusions
-  if [[ "$var" == "Location" || "$var" == "dateTime" ]]; then
+  # satelliteIdentifier must stay integer: the satwnd obs-space filters use
+  # `where: ... is_in:` on MetaData/satelliteIdentifier, and UFO's processWhere
+  # 'is_in' only accepts integer/string variables. Casting it to float aborts
+  # the analysis with "Only integer and string variables may be used for is_in".
+  if [[ "$var" == "Location" || "$var" == "dateTime" || "$var" == "satelliteIdentifier" ]]; then
     echo "  SKIP: excluded variable"
     echo
     continue
