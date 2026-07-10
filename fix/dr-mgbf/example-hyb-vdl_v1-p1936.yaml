@@ -311,13 +311,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_adpupa_airTemperature_120.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_adpupa_airTemperature_120.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -678,13 +678,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_adpupa_airTemperature_132.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_adpupa_airTemperature_132.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -1045,13 +1045,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_adpupa_specificHumidity_120.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_adpupa_specificHumidity_120.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -1426,13 +1426,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_adpupa_specificHumidity_132.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_adpupa_specificHumidity_132.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -1793,13 +1793,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_adpupa_winds_220.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_adpupa_winds_220.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -2198,13 +2198,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_adpupa_winds_232.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_adpupa_winds_232.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -2603,13 +2603,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircar_airTemperature_133.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircar_airTemperature_133.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -2955,13 +2955,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircar_specificHumidity_133.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircar_specificHumidity_133.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -3321,13 +3321,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircar_winds_233.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircar_winds_233.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -3699,13 +3699,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_airTemperature_130.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_airTemperature_130.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -4051,13 +4051,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_airTemperature_131.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_airTemperature_131.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -4403,13 +4403,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_airTemperature_134.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_airTemperature_134.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -4755,13 +4755,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_airTemperature_135.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_airTemperature_135.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -5107,13 +5107,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_specificHumidity_134.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_specificHumidity_134.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -5473,13 +5473,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_winds_230.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_winds_230.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -5848,13 +5848,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_winds_231.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_winds_231.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -6223,13 +6223,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_winds_234.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_winds_234.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -6598,13 +6598,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_aircft_winds_235.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_aircft_winds_235.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -6973,13 +6973,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_proflr_winds_227.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_proflr_winds_227.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -7447,13 +7447,13 @@ cost function:
             - stationIdentification
             sort variable: pressure
             sort order: descending
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_rassda_airTemperature_126.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_rassda_airTemperature_126.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -12357,13 +12357,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_mrms_refl.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_mrms_refl.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: false
+          engine:
+            type: H5File
+            obsfile: jdiag_mrms_refl.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         simulated variables:
