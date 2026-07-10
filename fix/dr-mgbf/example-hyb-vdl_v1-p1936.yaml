@@ -57,13 +57,16 @@ cost function:
       length: PT2H
   jb evaluation: false
   analysis variables: &3dvars 
-  - cloud_liquid_ice
+  - equivalent_reflectivity_factor
   - cloud_liquid_water
+  - cloud_liquid_ice
+  - rain_water
+  - snow_water
+  - graupel
   - eastward_wind
   - northward_wind
   - air_temperature
   - water_vapor_mixing_ratio_wrt_moist_air
-  - ozone_mass_mixing_ratio
   - air_pressure_at_surface
 
   geometry:
@@ -95,8 +98,12 @@ cost function:
       - air_temperature
       - air_pressure_thickness
       - water_vapor_mixing_ratio_wrt_moist_air
-      - cloud_liquid_ice
+      - equivalent_reflectivity_factor
       - cloud_liquid_water
+      - cloud_liquid_ice
+      - rain_water
+      - snow_water
+      - graupel
       - ozone_mass_mixing_ratio
       - geopotential_height_times_gravity_at_surface
       - f10m
@@ -118,15 +125,25 @@ cost function:
       #air_pressure_thickness: DELP
       air_pressure_thickness: delp
       water_vapor_mixing_ratio_wrt_moist_air: sphum
-      cloud_liquid_ice: ice_wat
-      cloud_liquid_water: liq_wat
-      ozone_mass_mixing_ratio: o3mr
       geopotential_height_times_gravity_at_surface: phis
       skin_temperature_at_surface: tsfc
       soilt: tslb
       soilm: smois
       eastward_wind_at_surface: u_srf
       northward_wind_at_surface: v_srf
+      rain_water: rainwat
+      snow_water: snowwat
+      graupel: graupel
+      cloud_liquid_ice: ice_wat
+      cloud_liquid_water: liq_wat
+      ozone_mass_mixing_ratio: o3mr
+      geopotential_height_times_gravity_at_surface: phis
+      skin_temperature_at_surface: tsfc
+      cloud_droplet_number_concentration: water_nc
+      cloud_ice_number_concentration: ice_nc
+      rain_number_concentration: rain_nc
+      upward_air_velocity: W
+      equivalent_reflectivity_factor: ref_f3d
   background error:
     covariance model: hybrid
     components:
@@ -139,8 +156,14 @@ cost function:
           - northward_wind
           - virtual_temperature
           - water_vapor_mixing_ratio_wrt_moist_air
-          - ozone_mass_mixing_ratio
           - air_pressure_at_surface
+          - rain_water
+          - snow_water
+          - graupel
+          - rain_water
+          - snow_water
+          - graupel
+          -  equivalent_reflectivity_factor
           read:
             gsi akbk: fv3_akbk
             gsi error covariance file: berror_stats
@@ -184,6 +207,12 @@ cost function:
           - geopotential_height_times_gravity_at_surface
           - air_pressure_thickness
           - air_pressure_at_surface
+          - cloud_liquid_ice
+          - cloud_liquid_water
+          - rain_water
+          - snow_water
+          - graupel
+          - equivalent_reflectivity_factor
         linear variable change:
           linear variable change name: Control2Analysis
           input variables:
@@ -191,19 +220,25 @@ cost function:
           - northward_wind
           - virtual_temperature
           - water_vapor_mixing_ratio_wrt_moist_air
-          - ozone_mass_mixing_ratio
           - air_pressure_at_surface
           - cloud_liquid_ice
           - cloud_liquid_water
+          - rain_water
+          - snow_water
+          - graupel
+          - equivalent_reflectivity_factor
           output variables:
           - eastward_wind
           - northward_wind
           - air_temperature
           - water_vapor_mixing_ratio_wrt_moist_air
-          - ozone_mass_mixing_ratio
           - air_pressure_at_surface
           - cloud_liquid_ice
           - cloud_liquid_water
+          - rain_water
+          - snow_water
+          - graupel
+          - equivalent_reflectivity_factor
       weight:
         value: 0.2
     - covariance:
@@ -226,7 +261,7 @@ cost function:
           localization method: SABER
           saber central block:
             saber block name: MGBF_covariance
-            mgbf sdl and vdl init namelist file: dr-mgbf-fix/norm-sdl_vdl_v1_init-p1936.nml
+            mgbf sdl and vdl init namelist file: dr-mgbf-fix/norm-dbz_vdl_v1_init-p1936.nml
           saber outer blocks:
           -  saber block name: interpolation
              inner geometry:

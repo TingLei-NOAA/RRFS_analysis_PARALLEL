@@ -235,15 +235,16 @@ cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/fmsmpp.nml .
 cp ${fixsimple}/3kmNA_p1936_input.nml ./INPUT/
 cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml}  HybridVar-jedi.yaml 
 mkdir -p dr-mgbf-fix
-cp ${fixsimple}/dr-mgbf/norm-sdl_vdl_v1_init-p1936.nml ./dr-mgbf-fix/
-cp ${fixsimple}/dr-mgbf/norm-dbz-1G-2var_group_p1936.nml ./dr-mgbf-fix/
-cp ${fixsimple}/dr-mgbf/norm-non_dbz-6var_group_p1936.nml ./dr-mgbf-fix/
+cp ${fixsimple}/dr-mgbf/norm*p1936.nml ./dr-mgbf-fix/
+#cp ${fixsimple}/dr-mgbf/norm-sdl_vdl_v1_init-p1936.nml ./dr-mgbf-fix/
+#cp ${fixsimple}/dr-mgbf/norm-dbz-1G-2var_group_p1936.nml ./dr-mgbf-fix/
+#cp ${fixsimple}/dr-mgbf/norm-non_dbz-6var_group_p1936.nml ./dr-mgbf-fix/
 
 cp ${fixsimple}/gsiparm_regional.anl .
 cp ${fixsimple}/fv3_grid_spec .
 cp ${fixsimple}/berror_stats .
 
-ln -sf ${fixsimple}/dr-mgbf/dr-norm*var .
+ln -sf ${fixsimple}/dr-mgbf/dr-norm*var* .
 sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${CDATE_M1_ISO}|" HybridVar-jedi.yaml
 sed -i "s|datetime: &analysisDate .*|datetime: \&analysisDate ${CDATE_ISO}|" HybridVar-jedi.yaml 
 
