@@ -25,11 +25,12 @@ By default, the script writes:
 
 Axis design: every completed cycle takes one equal step on the x-axis
 (an ordinal "irregular" time axis), so long outages do not stretch the
-figure or hide the overall behavior. Missing periods are still shown
-honestly: short gaps appear as thin dashed vertical lines, and outages
-of a day or more appear as shaded bands labeled with the missing
-duration. Only a handful of x tick labels are drawn no matter how many
-cycles are plotted.
+figure or hide the overall behavior. Regularly skipped cycles (e.g. the
+08Z and 20Z cycles that are never run) are connected through silently;
+breaks of at least --min-gap-hours appear as thin dashed vertical lines
+labeled with the missing duration, and outages of a day or more appear
+as shaded bands. Only a handful of x tick labels are drawn no matter
+how many cycles are plotted.
 
 Line conventions:
 
@@ -112,6 +113,16 @@ def parse_args() -> argparse.Namespace:
         type=float,
         help="Only plot cycles within this many days of the newest cycle.",
     )
+    parser.add_argument(
+        "--min-gap-hours",
+        type=float,
+        default=3.0,
+        help=(
+            "Smallest missing duration marked as a break in cycling. Shorter "
+            "skips (e.g. regularly unused cycle hours) are connected through "
+            "silently. Default: 3"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -143,18 +154,29 @@ def infer_cycle_interval(rows) -> timedelta:
     return Counter(diffs).most_common(1)[0][0]
 
 
-def find_gaps(rows, interval: timedelta) -> List[Tuple[int, timedelta]]:
-    """Return (index, missing duration) for each break in the cycling.
+def find_gaps(
+    rows, interval: timedelta, min_gap: timedelta
+) -> Tuple[List[Tuple[int, timedelta]], int]:
+    """Return breaks in the cycling and the count of silently skipped spots.
 
-    ``index`` is the position of the first cycle after the gap; the gap
-    sits between samples ``index - 1`` and ``index`` on the ordinal axis.
+    A break is reported as ``(index, missing duration)`` where ``index``
+    is the position of the first cycle after the gap; the gap sits
+    between samples ``index - 1`` and ``index`` on the ordinal axis.
+    Missing durations shorter than ``min_gap`` (e.g. cycle hours that
+    are regularly not run) are not reported as breaks; their count is
+    returned separately.
     """
     gaps = []
+    regular_skips = 0
     for i in range(1, len(rows)):
-        diff = rows[i].cycle - rows[i - 1].cycle
-        if diff > 1.5 * interval:
-            gaps.append((i, diff - interval))
-    return gaps
+        missing = rows[i].cycle - rows[i - 1].cycle - interval
+        if missing <= timedelta(0):
+            continue
+        if missing >= min_gap:
+            gaps.append((i, missing))
+        else:
+            regular_skips += 1
+    return gaps, regular_skips
 
 
 def format_duration(delta: timedelta) -> str:
@@ -197,7 +219,9 @@ def tick_positions(sample_count: int, max_ticks: int = 12) -> List[int]:
     return positions
 
 
-def plot_combined(rows, output_file: Path, gsi_mpi_ranks: int) -> None:
+def plot_combined(
+    rows, output_file: Path, gsi_mpi_ranks: int, min_gap_hours: float
+) -> None:
     try:
         import matplotlib
 
@@ -208,7 +232,7 @@ def plot_combined(rows, output_file: Path, gsi_mpi_ranks: int) -> None:
 
     n = len(rows)
     interval = infer_cycle_interval(rows)
-    gaps = find_gaps(rows, interval)
+    gaps, regular_skips = find_gaps(rows, interval, timedelta(hours=min_gap_hours))
     gap_indices = [index for index, _ in gaps]
     total_missing = sum((missing for _, missing in gaps), timedelta(0))
     size = marker_size(n)
@@ -257,27 +281,29 @@ def plot_combined(rows, output_file: Path, gsi_mpi_ranks: int) -> None:
         f"GSI estimated total memory: max RSS x {gsi_mpi_ranks} ranks",
     )
 
-    # Mark missing periods: thin dashed line for short gaps, shaded band
-    # with a duration label for outages of a day or more.
+    # Mark breaks in the cycling: an hour-scale break gets a thin dashed
+    # line, an outage of a day or more gets a shaded band. Both carry a
+    # small label with the missing duration.
     for index, missing in gaps:
         boundary = index - 0.5
-        if missing >= timedelta(hours=24):
-            runtime_axis.axvspan(index - 1, index, color="gray", alpha=0.15, zorder=0)
-            runtime_axis.text(
-                boundary,
-                0.99,
-                f"missing {format_duration(missing)}",
-                transform=runtime_axis.get_xaxis_transform(),
-                rotation=90,
-                va="top",
-                ha="center",
-                fontsize=11,
-                color="dimgray",
-            )
+        is_outage = missing >= timedelta(hours=24)
+        if is_outage:
+            runtime_axis.axvspan(index - 1, index, color="gray", alpha=0.18, zorder=0)
         else:
             runtime_axis.axvline(
-                boundary, color="gray", linestyle="--", linewidth=0.8, alpha=0.6, zorder=0
+                boundary, color="gray", linestyle="--", linewidth=0.9, alpha=0.7, zorder=0
             )
+        runtime_axis.text(
+            boundary,
+            0.99,
+            f"missing {format_duration(missing)}" if is_outage else format_duration(missing),
+            transform=runtime_axis.get_xaxis_transform(),
+            rotation=90,
+            va="top",
+            ha="center",
+            fontsize=11 if is_outage else 9,
+            color="dimgray",
+        )
 
     fig.suptitle(
         "GSI and JEDI Runtime and Total Memory by Analysis Cycle",
@@ -288,7 +314,9 @@ def plot_combined(rows, output_file: Path, gsi_mpi_ranks: int) -> None:
         f"(cadence {format_duration(interval)})"
     )
     if gaps:
-        coverage += f" — {len(gaps)} gap(s), {format_duration(total_missing)} missing"
+        coverage += (
+            f" — {len(gaps)} break(s) in cycling, {format_duration(total_missing)} missing"
+        )
     runtime_axis.set_title(coverage, fontsize=14, color="dimgray")
 
     runtime_axis.set_xlabel(
@@ -337,6 +365,9 @@ def main() -> int:
     if args.gsi_mpi_ranks < 1:
         print("ERROR: --gsi-mpi-ranks must be at least 1", file=sys.stderr)
         return 2
+    if args.min_gap_hours <= 0:
+        print("ERROR: --min-gap-hours must be positive", file=sys.stderr)
+        return 2
     if not args.stats_dir.is_dir():
         print(f"ERROR: stats directory does not exist: {args.stats_dir}", file=sys.stderr)
         return 2
@@ -356,13 +387,27 @@ def main() -> int:
     csv_file = output_dir / f"{args.prefix}.csv"
     png_file = output_dir / f"{args.prefix}.png"
     write_csv(rows, csv_file, args.gsi_mpi_ranks)
-    plot_combined(rows, png_file, args.gsi_mpi_ranks)
+    plot_combined(rows, png_file, args.gsi_mpi_ranks, args.min_gap_hours)
 
     missing_jedi = [row.cycle_text for row in rows if row.jedi_file is None]
     if len(rows) != total_rows:
         print(f"Plotting {len(rows)} of {total_rows} parsed cycles after time filtering")
     else:
         print(f"Parsed {len(rows)} GSI cycle files from {args.stats_dir}")
+    interval = infer_cycle_interval(rows)
+    gaps, regular_skips = find_gaps(rows, interval, timedelta(hours=args.min_gap_hours))
+    print(f"Cycle cadence: {format_duration(interval)}")
+    if gaps:
+        gap_texts = [
+            f"{rows[index - 1].cycle_text}->{rows[index].cycle_text} ({format_duration(missing)})"
+            for index, missing in gaps
+        ]
+        print(f"Breaks in cycling ({len(gaps)}): {', '.join(gap_texts)}")
+    if regular_skips:
+        print(
+            f"Connected through {regular_skips} short skip(s) "
+            f"< {args.min_gap_hours:g} h (regularly unused cycle hours)"
+        )
     print(f"Wrote CSV:  {csv_file}")
     print(f"Wrote plot: {png_file}")
     print(
