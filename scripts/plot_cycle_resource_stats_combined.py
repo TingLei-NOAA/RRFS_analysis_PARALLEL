@@ -18,6 +18,15 @@ Example plotting only the most recent 7 days of cycles:
         /u/ting.lei/dr-3kmNA-parallel/dr_save_stats \
         --last-days 7
 
+Example plotting an explicit time window (cycles are YYYYMMDDHH, both
+bounds inclusive; each option can also be used on its own):
+
+    python3 scripts/plot_cycle_resource_stats_combined.py \
+        /u/ting.lei/dr-3kmNA-parallel/dr_save_stats \
+        --start 2026070100 --end 2026071023
+
+The window filters apply to the CSV output as well as the plot.
+
 By default, the script writes:
 
     <stats_dir>/plots/cycle_resource_stats_combined.csv
