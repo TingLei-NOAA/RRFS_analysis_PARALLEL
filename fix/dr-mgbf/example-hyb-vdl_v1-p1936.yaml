@@ -18,11 +18,11 @@ variational:
       fms initialization:
         namelist filename: DataFix/fmsmpp.nml
         field table filename: DataFix/field_table
-      namelist filename: INPUT/3kmNA_p1936_input.nml
+      namelist filename: ./dr-convert2state/dr-6km/INPUT/sam_p1936_input.nml
       akbk: DataFix/fix/akbk66.nc
       # input.nml
       npz: 65
-      layout: *fv3_layout
+      layout: *fv3_layout 
       io_layout: [1,1]
       ntiles: 1
       fieldsets:
@@ -33,11 +33,11 @@ variational:
       fms initialization:
         namelist filename: DataFix/fmsmpp.nml
         field table filename: DataFix/field_table
-      namelist filename: ./INPUT/3kmNA_p1936_input.nml
+      namelist filename: ./dr-convert2state/dr-6km/INPUT/sam_p1936_input.nml
       akbk: DataFix/fix/akbk66.nc
       # input.nml
       npz: 65
-      layout: *fv3_layout
+      layout: *fv3_layout 
       io_layout: [1,1]
       ntiles: 1
       fieldsets:
@@ -105,16 +105,16 @@ cost function:
       - snow_water
       - graupel
       - ozone_mass_mixing_ratio
-      - geopotential_height_times_gravity_at_surface
-      - f10m
+      - geopotential_at_surface
+      - ratio_of_wind_at_surface_adjacent_layer_to_wind_at_10m
       - slmsk
       - sheleg
       - skin_temperature_at_surface
       - vtype
       - stype
       - vfrac
-      - soilt
-      - soilm
+      - tslb
+      - smois
       - eastward_wind_at_surface
       - northward_wind_at_surface
       - air_pressure_at_surface
@@ -125,10 +125,8 @@ cost function:
       #air_pressure_thickness: DELP
       air_pressure_thickness: delp
       water_vapor_mixing_ratio_wrt_moist_air: sphum
-      geopotential_height_times_gravity_at_surface: phis
+      geopotential_at_surface: phis
       skin_temperature_at_surface: tsfc
-      soilt: tslb
-      soilm: smois
       eastward_wind_at_surface: u_srf
       northward_wind_at_surface: v_srf
       rain_water: rainwat
@@ -137,13 +135,14 @@ cost function:
       cloud_liquid_ice: ice_wat
       cloud_liquid_water: liq_wat
       ozone_mass_mixing_ratio: o3mr
-      geopotential_height_times_gravity_at_surface: phis
+      geopotential_at_surface: phis
       skin_temperature_at_surface: tsfc
       cloud_droplet_number_concentration: water_nc
       cloud_ice_number_concentration: ice_nc
       rain_number_concentration: rain_nc
       upward_air_velocity: W
       equivalent_reflectivity_factor: ref_f3d
+      ratio_of_wind_at_surface_adjacent_layer_to_wind_at_10m: f10m
   background error:
     covariance model: hybrid
     components:
@@ -204,7 +203,7 @@ cost function:
           - air_temperature
           - water_vapor_mixing_ratio_wrt_moist_air
           - ozone_mass_mixing_ratio
-          - geopotential_height_times_gravity_at_surface
+          - geopotential_at_surface
           - air_pressure_thickness
           - air_pressure_at_surface
           - cloud_liquid_ice
@@ -243,6 +242,19 @@ cost function:
         value: 0.2
     - covariance:
         covariance model: ensemble
+        ensemble geometry:
+          fms initialization:
+            namelist filename: DataFix/fmsmpp.nml
+            field table filename: DataFix/field_table
+          namelist filename: INPUT/3kmNA_p1936_input.nml
+          akbk: DataFix/fix/akbk66.nc
+          # input.nml
+          npz: 65
+          layout: *fv3_layout
+          io_layout: [1,1]
+          ntiles: 1
+          fieldsets:
+          - fieldset: DataFix/fix/dynamics_lam_cmaq.yaml
         members from template:
           template:
             datetime: *analysisDate 
@@ -381,20 +393,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 120
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/airTemperature
           is_in: 120
@@ -748,20 +746,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -2700
         maxvalue: 2700
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 132
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/airTemperature
           is_in: 132
@@ -1134,20 +1118,6 @@ cost function:
           is_in: 120
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: specificHumidity
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/specificHumidity
-          is_in: 120
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -1496,20 +1466,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -2700
         maxvalue: 2700
-        where:
-        - variable: ObsType/specificHumidity
-          is_in: 132
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: specificHumidity
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/specificHumidity
           is_in: 132
@@ -1869,21 +1825,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/windEastward
-          is_in: 220
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 220
@@ -2279,21 +2220,6 @@ cost function:
           is_in: 232
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 232
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -2678,20 +2604,6 @@ cost function:
           is_in: 133
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 133
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -3044,20 +2956,6 @@ cost function:
           is_in: 133
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: specificHumidity
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/specificHumidity
-          is_in: 133
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -3397,21 +3295,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -2700
         maxvalue: 2700
-        where:
-        - variable: ObsType/windEastward
-          is_in: 233
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 233
@@ -3774,20 +3657,6 @@ cost function:
           is_in: 130
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 130
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -4121,20 +3990,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -3600
         maxvalue: 3600
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 131
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/airTemperature
           is_in: 131
@@ -4478,20 +4333,6 @@ cost function:
           is_in: 134
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 134
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -4825,20 +4666,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -2700
         maxvalue: 2700
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 135
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/airTemperature
           is_in: 135
@@ -5196,20 +5023,6 @@ cost function:
           is_in: 134
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: specificHumidity
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/specificHumidity
-          is_in: 134
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -5549,21 +5362,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -2700
         maxvalue: 2700
-        where:
-        - variable: ObsType/windEastward
-          is_in: 230
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 230
@@ -5929,21 +5727,6 @@ cost function:
           is_in: 231
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 231
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -6299,21 +6082,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -2700
         maxvalue: 2700
-        where:
-        - variable: ObsType/windEastward
-          is_in: 234
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 234
@@ -6679,21 +6447,6 @@ cost function:
           is_in: 235
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 235
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -7049,21 +6802,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -1440
         maxvalue: 1440
-        where:
-        - variable: ObsType/windEastward
-          is_in: 227
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 227
@@ -7522,20 +7260,6 @@ cost function:
           is_in: 126
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: airTemperature
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/airTemperature
-          is_in: 126
-        action:
-          name: reduce obs space
       - filter: Bounds Check
         udescriptor: online_domain_check
         filter variables:
@@ -7882,23 +7606,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/windEastward
-          is_in: 253
-        - variable: MetaData/satelliteIdentifier
-          is_in: 56
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 253
@@ -8274,23 +7981,6 @@ cost function:
           is_in: 57
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 253
-        - variable: MetaData/satelliteIdentifier
-          is_in: 57
-        action:
-          name: reduce obs space
       - filter: Perform Action
         udescriptor: initial_error_assignment
         filter variables:
@@ -8637,23 +8327,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/windEastward
-          is_in: 242
-        - variable: MetaData/satelliteIdentifier
-          is_in: 174
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 242
@@ -9012,23 +8685,6 @@ cost function:
           is_in: 174
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 250
-        - variable: MetaData/satelliteIdentifier
-          is_in: 174
-        action:
-          name: reduce obs space
       - filter: Perform Action
         udescriptor: initial_error_assignment
         filter variables:
@@ -9373,23 +9029,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/windEastward
-          is_in: 252
-        - variable: MetaData/satelliteIdentifier
-          is_in: 174
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 252
@@ -9758,23 +9397,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/windEastward
-          is_in: 245
-        - variable: MetaData/satelliteIdentifier
-          is_in: 272
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 245
@@ -10225,23 +9847,6 @@ cost function:
           is_in: 272
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 246
-        - variable: MetaData/satelliteIdentifier
-          is_in: 272
-        action:
-          name: reduce obs space
       - filter: Perform Action
         udescriptor: initial_error_assignment
         filter variables:
@@ -10669,23 +10274,6 @@ cost function:
           is_in: 272
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 247
-        - variable: MetaData/satelliteIdentifier
-          is_in: 272
-        action:
-          name: reduce obs space
       - filter: Perform Action
         udescriptor: initial_error_assignment
         filter variables:
@@ -11094,23 +10682,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/windEastward
-          is_in: 245
-        - variable: MetaData/satelliteIdentifier
-          is_in: 273
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 245
@@ -11561,23 +11132,6 @@ cost function:
           is_in: 273
         action:
           name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
-        where:
-        - variable: ObsType/windEastward
-          is_in: 246
-        - variable: MetaData/satelliteIdentifier
-          is_in: 273
-        action:
-          name: reduce obs space
       - filter: Perform Action
         udescriptor: initial_error_assignment
         filter variables:
@@ -11998,23 +11552,6 @@ cost function:
         - name: MetaData/timeOffset
         minvalue: -5400
         maxvalue: 5400
-        where:
-        - variable: ObsType/windEastward
-          is_in: 247
-        - variable: MetaData/satelliteIdentifier
-          is_in: 273
-        action:
-          name: reduce obs space
-      - filter: Temporal Thinning
-        udescriptor: duplicate_check
-        filter variables:
-        - name: windEastward
-        - name: windNorthward
-        min_spacing: PT90M
-        tolerance: PT0H
-        seed_time: '2026-06-30T08:00:00Z'
-        category_variable:
-          name: MetaData/longitude_latitude_pressure
         where:
         - variable: ObsType/windEastward
           is_in: 247

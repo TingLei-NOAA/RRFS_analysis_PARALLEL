@@ -153,7 +153,7 @@ GETKF_PLACE="vscatter"
 GETKF_LOG="getkf.log"
 # HybridVar analysis
 HybridVar_JOB_NAME="na3km_hybrid"
-HybridVar_SELECT="62:mpiprocs=128:ompthreads=1:ncpus=128"
+HybridVar_SELECT="62:mpiprocs=128:ncpus=128:ompthreads=4"
 HybridVar_WALLTIME="01:00:00"
 HybridVar_PLACE="vscatter:exclhost"
 HybridVar_LOG="HybridVar.log"

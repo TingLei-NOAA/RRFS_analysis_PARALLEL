@@ -147,6 +147,10 @@ export PYTHONUNBUFFERED=1
 # pyioda libraries
 shopt -s nullglob
 dirs=("$RDASAPP_DIR"/build/lib/python3.*)
+if (( ${#dirs[@]} == 0 )); then
+    echo "ERROR: no matching Python directory" >&2
+    exit 1
+fi
 PYIODALIB=${dirs[0]}
 WXFLOWLIB=${RDASAPP_DIR}/sorc/wxflow/src
 export PYTHONPATH="${WXFLOWLIB}:${PYIODALIB}:${PYTHONPATH}"

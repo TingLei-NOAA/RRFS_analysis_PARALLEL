@@ -279,7 +279,8 @@ def plot_combined(
     jedi_runtime_line = draw(runtime_axis, "jedi_runtime", "tab:blue", "-", "o", "JEDI runtime")
     gsi_runtime_line = draw(runtime_axis, "gsi_runtime", "tab:blue", ":", "o", "GSI wall time")
     jedi_memory_line = draw(
-        memory_axis, "jedi_memory", "tab:orange", "-", "s", "JEDI reported aggregate memory"
+        memory_axis, "jedi_memory", "tab:orange", "-", "s", "JEDI memory"
+#clt        memory_axis, "jedi_memory", "tab:orange", "-", "s", "JEDI reported aggregate memory"
     )
     gsi_memory_line = draw(
         memory_axis,
@@ -287,7 +288,8 @@ def plot_combined(
         "tab:orange",
         ":",
         "s",
-        f"GSI estimated total memory: max RSS x {gsi_mpi_ranks} ranks",
+        f"GSI total memory",
+#        f"GSI estimated total memory: max RSS x {gsi_mpi_ranks} ranks",
     )
 
     # Mark breaks in the cycling: an hour-scale break gets a thin dashed
@@ -357,7 +359,7 @@ def plot_combined(
             jedi_memory_line,
             gsi_memory_line,
         ],
-        loc="upper center",
+        loc="center left",
         bbox_to_anchor=(0.5, 0.92),
         ncol=2,
         frameon=True,

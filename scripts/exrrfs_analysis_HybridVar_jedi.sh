@@ -50,10 +50,13 @@ ulimit -s unlimited
 ulimit -v unlimited
 ulimit -a
 set -euox pipefail
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=4
 export OMP_PLACES=cores
 export OMP_PROC_BIND=close
-export OMP_STACKSIZE=1G
+export OMP_STACKSIZE=512M
+
+export MPICH_ALLTOALLV_THROTTLE=484
+
 export FI_MR_CACHE_MONITOR=memhooks
 export FI_MR_CACHE_MAX_COUNT=0
 export MPICH_OFI_STARTUP_CONNECT=1
@@ -228,6 +231,9 @@ FIXLAM=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_na3km/rrfs-workflow/f
 ln -snf ${FIXLAM}/${CRES}_grid.tile7.halo3.nc INPUT/${CRES}_grid.tile7.halo3.nc
 ln -snf ${FIXLAM}/${CRES}_grid.tile7.halo3.nc INPUT/${CRES}_grid.tile7.nc
 ln -snf ${FIXLAM}/${CRES}_mosaic.halo3.nc INPUT/grid_spec.nc
+#clt for dual resoluton runs
+ln -snf ${fixsimple}/dr-convert2state/dr-6km/INPUT/C1732_grid.tile7.halo3.nc ./INPUT/ 
+# 
 cp ${FIX_JEDI}/dynamics_lam_cmaq.yaml .
 cp ${FIX_JEDI}/field_table .
 cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/fmsmpp.nml .
@@ -249,6 +255,7 @@ sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${CDATE_M1_ISO}|" HybridVar-je
 sed -i "s|datetime: &analysisDate .*|datetime: \&analysisDate ${CDATE_ISO}|" HybridVar-jedi.yaml 
 
 ln -sf ${fixsimple}/DataFix .
+ln -sf ${fixsimple}/dr-convert2state .
 
 #
 
