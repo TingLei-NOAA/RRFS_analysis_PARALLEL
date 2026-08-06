@@ -304,7 +304,7 @@ cost function:
                  local interpolator type: oops unstructured grid interpolator
                  regional check enabled: false
              inverse interpolator:
-                 local nterpolator type: oops unstructured grid interpolator
+                 local interpolator type: oops unstructured grid interpolator
                  regional check enabled: false
       weight:
         value: 0.8

@@ -291,7 +291,6 @@ ln -sf ${fixsimple}/dr-convert2state .
 #
 #export OOPS_TRACE=1
 #export OOPS_DEBUG=1
-export OMP_NUM_THREADS=1
 
 
 
