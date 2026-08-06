@@ -325,7 +325,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_adpupa_airTemperature_120.nc
@@ -678,7 +678,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_adpupa_airTemperature_132.nc
@@ -1031,7 +1031,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_adpupa_specificHumidity_120.nc
@@ -1398,7 +1398,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_adpupa_specificHumidity_132.nc
@@ -1751,7 +1751,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_adpupa_winds_220.nc
@@ -2141,7 +2141,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_adpupa_winds_232.nc
@@ -2531,7 +2531,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircar_airTemperature_133.nc
@@ -2869,7 +2869,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircar_specificHumidity_133.nc
@@ -3221,7 +3221,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircar_winds_233.nc
@@ -3584,7 +3584,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_airTemperature_130.nc
@@ -3922,7 +3922,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_airTemperature_131.nc
@@ -4260,7 +4260,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_airTemperature_134.nc
@@ -4598,7 +4598,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_airTemperature_135.nc
@@ -4936,7 +4936,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_specificHumidity_134.nc
@@ -5288,7 +5288,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_winds_230.nc
@@ -5648,7 +5648,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_winds_231.nc
@@ -6008,7 +6008,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_winds_234.nc
@@ -6368,7 +6368,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_aircft_winds_235.nc
@@ -6728,7 +6728,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_proflr_winds_227.nc
@@ -7187,7 +7187,7 @@ cost function:
             sort order: descending
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_rassda_airTemperature_126.nc
@@ -11896,7 +11896,7 @@ cost function:
             missing file action: warn
         obsdataout:
           empty obs space action: create output
-          write multiple files: false
+          write multiple files: *write_mult
           engine:
             type: H5File
             obsfile: jdiag_mrms_refl.nc
