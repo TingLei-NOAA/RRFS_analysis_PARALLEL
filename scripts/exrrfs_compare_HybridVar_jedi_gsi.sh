@@ -131,7 +131,7 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
 
 #clt 
   rdas_rrfs_script=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/rrfs-test/ush/diagnostics_and_graphics
-  gsianl_dir=$controlpath/analysis
+  gsianl_dir=$controlpath_analysis/analysis
   mkdir -p dr-cmp_rundir 
   cd dr-cmp_rundir
   cp ${gsianl_dir}/diag*conv*nc* .
