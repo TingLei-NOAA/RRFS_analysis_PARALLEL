@@ -88,7 +88,30 @@ sed -i "s/mm/${MM}/"     coupler.res
 sed -i "s/dd/${DD}/"     coupler.res
 sed -i "s/hh/${HH}/"     coupler.res
 YYYYMMDDHH=${YYYYMMDD}${HH}
-CDATE=${YYYYMMDD}${HH}
+#
+# controlpath is the control cycle directory <com_root>/rrfs.YYYYMMDD/HH, e.g.
+# /lfs/h1/ops/para/com/rrfs/v1.0/rrfs.20260810/10. Its forecast/RESTART files are
+# valid one hour later, so the analysis time is that cycle time plus one hour.
+# controlpath_analysis is the control directory for that analysis time, e.g.
+# /lfs/h1/ops/para/com/rrfs/v1.0/rrfs.20260810/11
+#
+control_cycle_hh=${controlpath##*/}
+control_cycle_dir=${controlpath%/*}
+control_cycle_ymd=${control_cycle_dir##*.}
+control_com_root=${control_cycle_dir%/*}
+control_com_prefix=${control_cycle_dir##*/}
+control_com_prefix=${control_com_prefix%%.*}
+if ! [[ ${control_cycle_ymd} =~ ^[0-9]{8}$ && ${control_cycle_hh} =~ ^[0-9]{2}$ ]]; then
+  echo "ERROR: unable to parse cycle time from controlpath: ${controlpath}" >&2
+  exit 1
+fi
+control_cycle_epoch=$(date -u -d "${control_cycle_ymd:0:4}-${control_cycle_ymd:4:2}-${control_cycle_ymd:6:2} ${control_cycle_hh}:00:00" +%s)
+CDATE=$(date -u -d "@$((control_cycle_epoch + 3600))" +%Y%m%d%H)
+controlpath_analysis=${control_com_root}/${control_com_prefix}.${CDATE:0:8}/${CDATE:8:2}
+if [[ "${CDATE}" != "${YYYYMMDDHH}" ]]; then
+  echo "WARNING: analysis time from controlpath (${CDATE}) differs from the enspath valid time (${YYYYMMDDHH})"
+fi
+echo "thinkdeb controlpath=${controlpath} controlpath_analysis=${controlpath_analysis} CDATE=${CDATE}"
 CDATE_M1=$(date +%Y%m%d%H -d "$(echo "${CDATE}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/') 1 hour ago")
 echo "thinkdeb CDATA/CDATA_M1 are "$CDATE ' ' $CDATE_M1
 CDATE_M1_ISO=$(date -u -d "${CDATE_M1:0:8} ${CDATE_M1:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")

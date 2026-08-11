@@ -7533,13 +7533,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.seviri_m9.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_253_56.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_253_56.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -7901,13 +7901,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.seviri_m10.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_253_57.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_253_57.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -8254,13 +8254,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.ahi_h9.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_242_174.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_242_174.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -8605,13 +8605,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.ahi_h9.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_250_174.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_250_174.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -8956,13 +8956,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.ahi_h9.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_252_174.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_252_174.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -9324,13 +9324,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.abi_goes-18.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_245_272.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_245_272.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -9767,13 +9767,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.abi_goes-18.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_246_272.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_246_272.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -10194,13 +10194,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.abi_goes-18.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_247_272.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_247_272.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -10609,13 +10609,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.abi_goes-19.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_245_273.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_245_273.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -11052,13 +11052,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.abi_goes-19.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_246_273.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_246_273.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
@@ -11479,13 +11479,13 @@ cost function:
             type: H5File
             obsfile: data/obs/ioda_satwnd.abi_goes-19.nc
             missing file action: warn
-  #      obsdataout:
-  #        empty obs space action: create output
-  #        write multiple files: false
-  #        engine:
-  #          type: H5File
-  #          obsfile: jdiag_satwnd_winds_247_273.nc
-  #          allow overwrite: true
+        obsdataout:
+          empty obs space action: create output
+          write multiple files: *write_mult
+          engine:
+            type: H5File
+            obsfile: jdiag_satwnd_winds_247_273.nc
+            allow overwrite: true
         io pool:
           max pool size: 80
         observed variables:
