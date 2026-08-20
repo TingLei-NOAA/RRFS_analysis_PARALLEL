@@ -23,7 +23,8 @@ getkfyaml=/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphe
 HybridVaryaml=xxx/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
 
 # Paths to RRFS ensemble and observations in realtime (wont change)
-rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
+#cltorg rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
+rrfspath=/lfs/h1/ops/prod/com/rrfs/v1.0
 reflpath=/lfs/h1/ops/prod/dcom/ldmdata/obs/upperair/mrms/conus/MergedReflectivityQC
 obsbase=/lfs/h1/ops/prod/com/obsproc/v1.2
 

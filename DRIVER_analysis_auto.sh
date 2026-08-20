@@ -57,7 +57,8 @@ if [[ "${TRACE_AUTO:-FALSE}" == "TRUE" ]]; then
     PS4='+ ${BASH_SOURCE}:${LINENO}: '
     set -x
 fi
-rrfspath=${RRFSPATH:-/lfs/h1/ops/para/com/rrfs/v1.0}
+#cltorg rrfspath=${RRFSPATH:-/lfs/h1/ops/para/com/rrfs/v1.0}
+rrfspath=${RRFSPATH:-/lfs/h1/ops/prod/com/rrfs/v1.0}
 baserundir=${BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/GETKF_PARALLEL}
 HybridVar_baserundir=${HybridVar_BASERUNDIR:-/lfs/h2/emc/stmp/${USER}/HybridVar_PARALLEL}
 lockfile=${LOCKFILE:-${baserundir}/.enspath_lock}

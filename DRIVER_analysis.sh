@@ -13,14 +13,15 @@
 # Paths to local installs
 #clt RDASApp=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp
 RDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp
-rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_na3km/rrfs-workflow
+rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow
 baserundir=/lfs/h2/emc/stmp/Ting.Lei/GETKF_PARALLEL
 
 # GETKF config
 getkfyaml=/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphere-templates-fv3_na3km_getkf.yaml
 
 # Paths to RRFS ensemble and observations in realtime (wont change)
-rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
+#cltorg rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
+rrfspath=/lfs/h1/ops/prod/com/rrfs/v1.0
 reflpath=/lfs/h1/ops/prod/dcom/ldmdata/obs/upperair/mrms/conus/MergedReflectivityQC
 obsbase=/lfs/h1/ops/prod/com/obsproc/v1.2
 

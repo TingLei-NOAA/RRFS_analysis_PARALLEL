@@ -250,7 +250,7 @@ cp ${mrmsdir}/00/ioda_mrms_${YYYYMMDD}${HH}_00.nc4 data/obs/ioda_mrms_refl.nc
 #
 echo "thinkdeb " `pwd`
 mkdir -p INPUT
-FIXLAM=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_na3km/rrfs-workflow/fix/lam/RRFS_NA_3km
+FIXLAM=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow/fix/lam/RRFS_NA_3km
 ln -snf ${FIXLAM}/${CRES}_grid.tile7.halo3.nc INPUT/${CRES}_grid.tile7.halo3.nc
 ln -snf ${FIXLAM}/${CRES}_grid.tile7.halo3.nc INPUT/${CRES}_grid.tile7.nc
 ln -snf ${FIXLAM}/${CRES}_mosaic.halo3.nc INPUT/grid_spec.nc

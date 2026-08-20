@@ -30,7 +30,7 @@ set +x
 module reset 
 #cltorg source ${rrfsworkflow}/versions/run.ver
 #cltorg
-rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_na3km/rrfs-workflow
+rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow
 source ${rrfsworkflow}/versions/run.ver
 module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
 module load run_ioda_bufr.local
