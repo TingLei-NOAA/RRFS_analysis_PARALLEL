@@ -113,8 +113,11 @@ if [[ "${CDATE}" != "${YYYYMMDDHH}" ]]; then
 fi
 echo "thinkdeb controlpath=${controlpath} controlpath_analysis=${controlpath_analysis} CDATE=${CDATE}"
 CDATE_M1=$(date +%Y%m%d%H -d "$(echo "${CDATE}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/') 1 hour ago")
-echo "thinkdeb CDATA/CDATA_M1 are "$CDATE ' ' $CDATE_M1
+CDATE_M2=$(date +%Y%m%d%H -d "$(echo "${CDATE}" | sed 's/\([[:digit:]]\{2\}\)$/ \1/') 2 hour ago")
+#echo "thinkdeb CDATA/CDATA_M1 are "$CDATE ' ' $CDATE_M1
+echo "thinkdeb CDATA/CDATA_M2 xx are "$CDATE ' ' $CDATE_M2
 CDATE_M1_ISO=$(date -u -d "${CDATE_M1:0:8} ${CDATE_M1:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
+CDATE_M2_ISO=$(date -u -d "${CDATE_M2:0:8} ${CDATE_M2:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
 CDATE_ISO=$(date -u -d "${CDATE:0:8} ${CDATE:8:2}:00:00" +"%Y-%m-%dT%H:%M:%SZ")
 
 
@@ -274,7 +277,8 @@ cp ${fixsimple}/fv3_grid_spec .
 cp ${fixsimple}/berror_stats .
 
 ln -sf ${fixsimple}/dr-mgbf/dr-norm*var* .
-sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${CDATE_M1_ISO}|" HybridVar-jedi.yaml
+#cltorg sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${CDATE_M1_ISO}|" HybridVar-jedi.yaml
+sed -i "s|^\([[:space:]]*begin:[[:space:]]*\).*|\1${CDATE_M2_ISO}|" HybridVar-jedi.yaml
 sed -i "s|datetime: &analysisDate .*|datetime: \&analysisDate ${CDATE_ISO}|" HybridVar-jedi.yaml 
 
 ln -sf ${fixsimple}/DataFix .

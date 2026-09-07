@@ -132,6 +132,26 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
 #clt 
   rdas_rrfs_script=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/rrfs-test/ush/diagnostics_and_graphics
   gsianl_dir=$controlpath_analysis/analysis
+  gsifcst_dir=$controlpath_analysis/forecast/RESTART
+  gsifcstinput_dir=$controlpath_analysis/forecast/INPUT 
+  YYYYMMDD_anal=${CDATE:0:8}
+  HH_anal=${CDATE:8:2}
+  suffix_anal=${YYYYMMDD_anal}.${HH_anal}0000.
+
+  mkdir -p dr-bg_analysis
+  cd dr-bg_analysis
+  cp -L ${gsifcstinput_dir}/fv_core.res.tile1.nc      gsi_anl_fv_core.res.tile1.nc
+  cp -L  ${gsifcstinput_dir}/fv_tracer.res.tile1.nc     gsi_anl_fv_tracer.res.tile1.nc
+  cp -L  ${gsifcstinput_dir}/phy_data.nc     gsi_anl_phy_data.nc
+  cp -L  $anldir/data/inputs/bkg/fv_core.res.tile1.nc  jedi_bg_fv_core.res.tile1.nc
+  cp -L  $anldir/data/inputs/bkg/bkg/fv_tracer.res.tile1.nc  jedi_bg_fv_tracer.res.tile1.nc
+  cp -L  $anldir/data/inputs/bkg/bkg/phy_data.nc  jedi_bg_phy_data.nc
+  cp $anldir/p1936-hyb-norm-vdl*.nc  # the analysis of jedi
+   
+  cd ..
+  
+
+
   mkdir -p dr-cmp_rundir 
   cd dr-cmp_rundir
   cp ${gsianl_dir}/diag*conv*nc* .

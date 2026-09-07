@@ -90,8 +90,9 @@ cp "${OBSPATH}/rrfs.t${cyc}z.satwnd.tm00.bufr_d" satwndbufr
 cp "${OBSPATH}/rrfs.t${cyc}z.gsrcsr.tm00.bufr_d" abibufr
 cp "${OBSPATH}/rrfs.t${cyc}z.atms.tm00.bufr_d" atmsbufr
 cp "${OBSPATH}/rrfs.t${cyc}z.crisf4.tm00.bufr_d" crisfsbufr
-cp "${OBSPATH}/${CDATE}.rap.t${cyc}z.1bamua.tm00.bufr_d" 1bamsuabufr
-cp "${OBSPATH}/${CDATE}.rap.t${cyc}z.esamua.tm00.bufr_d" esamsuabufr
+#clt cp "${OBSPATH}/${CDATE}.rap.t${cyc}z.1bamua.tm00.bufr_d" 1bamsuabufr
+#clt cp "${OBSPATH}/${CDATE}.rap.t${cyc}z.esamua.tm00.bufr_d" esamsuabufr
+cp "${OBSPATH}/rrfs.t${cyc}z.esamua.tm00.bufr_d" esamsuabufr
 #
 #
 #-----------------------------------------------------------------------
