@@ -54,7 +54,7 @@ cost function:
   cost type: 3D-Var
   time window:
       begin: 2024-05-27T00:00:00Z
-      length: PT2H
+      length: PT4H
   jb evaluation: false
   analysis variables: &3dvars 
   - equivalent_reflectivity_factor

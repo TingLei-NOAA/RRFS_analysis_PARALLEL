@@ -138,17 +138,6 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
   HH_anal=${CDATE:8:2}
   suffix_anal=${YYYYMMDD_anal}.${HH_anal}0000.
 
-  mkdir -p dr-bg_analysis
-  cd dr-bg_analysis
-  cp -L ${gsifcstinput_dir}/fv_core.res.tile1.nc      gsi_anl_fv_core.res.tile1.nc
-  cp -L  ${gsifcstinput_dir}/fv_tracer.res.tile1.nc     gsi_anl_fv_tracer.res.tile1.nc
-  cp -L  ${gsifcstinput_dir}/phy_data.nc     gsi_anl_phy_data.nc
-  cp -L  $anldir/data/inputs/bkg/fv_core.res.tile1.nc  jedi_bg_fv_core.res.tile1.nc
-  cp -L  $anldir/data/inputs/bkg/bkg/fv_tracer.res.tile1.nc  jedi_bg_fv_tracer.res.tile1.nc
-  cp -L  $anldir/data/inputs/bkg/bkg/phy_data.nc  jedi_bg_phy_data.nc
-  cp $anldir/p1936-hyb-norm-vdl*.nc  # the analysis of jedi
-   
-  cd ..
   
 
 
@@ -177,6 +166,17 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
       --infiles "${files[@]}" \
     && rm -f "${files[@]}"
   done
+  mkdir -p dr-bg_analysis
+  cd dr-bg_analysis
+  cp -L ${gsifcstinput_dir}/fv_core.res.tile1.nc      gsi_anl_fv_core.res.tile1.nc
+  cp -L  ${gsifcstinput_dir}/fv_tracer.res.tile1.nc     gsi_anl_fv_tracer.res.tile1.nc
+  cp -L  ${gsifcstinput_dir}/phy_data.nc     gsi_anl_phy_data.nc
+  cp -L  $anldir/data/inputs/bkg/fv_core.res.tile1.nc  jedi_bg_fv_core.res.tile1.nc
+  cp -L  $anldir/data/inputs/bkg/fv_tracer.res.tile1.nc  jedi_bg_fv_tracer.res.tile1.nc
+  cp -L  $anldir/data/inputs/bkg/phy_data.nc  jedi_bg_phy_data.nc
+  cp $anldir/p1936-hyb-norm-vdl*.nc . # the analysis of jedi
+   
+  cd ..
 
 
 
