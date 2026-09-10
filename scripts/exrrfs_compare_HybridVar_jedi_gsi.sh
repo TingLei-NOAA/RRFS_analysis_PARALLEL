@@ -166,6 +166,7 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
       --infiles "${files[@]}" \
     && rm -f "${files[@]}"
   done
+ if [ 1 -gt 2 ]; then
   mkdir -p dr-bg_analysis
   cd dr-bg_analysis
   cp -L ${gsifcstinput_dir}/fv_core.res.tile1.nc      gsi_anl_fv_core.res.tile1.nc
@@ -177,6 +178,7 @@ script_dir="/u/ting.lei/dr-3kmNA-parallel/RRFS_analysis_PARALLEL/scripts"
   cp $anldir/p1936-hyb-norm-vdl*.nc . # the analysis of jedi
    
   cd ..
+ fi 
 
 
 

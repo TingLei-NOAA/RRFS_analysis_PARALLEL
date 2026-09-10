@@ -180,7 +180,8 @@ done
 #
 #-----------------------------------------------------------------------
 #
-
+#first to deal with the control one
+  ncks -O -v ref_f3d data/inputs/bkg/phy_data.nc data/inputs/bkg/phy_data.nc_prepdbz > prep_phydata_bkg.log 2>&1 && python prep_phydata_dbz.py data/inputs/bkg/phy_data.nc_prepdbz >> prep_phydata_bkg.log 2>&1
 # Verify all input files exist before starting parallel processing
 echo "Verifying all input files are accessible..."
 max_retries=5
