@@ -160,10 +160,7 @@ cost function:
           - rain_water
           - snow_water
           - graupel
-          - rain_water
-          - snow_water
-          - graupel
-          -  equivalent_reflectivity_factor
+          - equivalent_reflectivity_factor
           read:
             gsi akbk: fv3_akbk
             gsi error covariance file: berror_stats
