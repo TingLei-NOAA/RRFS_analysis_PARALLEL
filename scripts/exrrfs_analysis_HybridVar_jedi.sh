@@ -179,9 +179,17 @@ done
 # Pre-process the phy_data for reflectivity assimilation
 #
 #-----------------------------------------------------------------------
+
+   if [ ${l_enforce_zero_lower_bounds:-TRUE} = TRUE ]; then
+      pyname_prep_phydata_dbz=prep_phydata_dbz.py
+   else
+      pyname_prep_phydata_dbz=prep_phydata_dbz_control.py
+   fi
+      
 #
 #first to deal with the control one
-  ncks -O -v ref_f3d data/inputs/bkg/phy_data.nc data/inputs/bkg/phy_data.nc_prepdbz > prep_phydata_bkg.log 2>&1 && python prep_phydata_dbz.py data/inputs/bkg/phy_data.nc_prepdbz >> prep_phydata_bkg.log 2>&1
+#cltorg  ncks -O -v ref_f3d data/inputs/bkg/phy_data.nc data/inputs/bkg/phy_data.nc_prepdbz > prep_phydata_bkg.log 2>&1 && python prep_phydata_dbz.py data/inputs/bkg/phy_data.nc_prepdbz >> prep_phydata_bkg.log 2>&1
+  ncks -O -v ref_f3d data/inputs/bkg/phy_data.nc data/inputs/bkg/phy_data.nc_prepdbz > prep_phydata_bkg.log 2>&1 && python ${pyname_prep_phydata_dbz} data/inputs/bkg/phy_data.nc_prepdbz >> prep_phydata_bkg.log 2>&1
 # Verify all input files exist before starting parallel processing
 echo "Verifying all input files are accessible..."
 max_retries=5
@@ -211,10 +219,12 @@ while [ "$files_missing" = true ] && [ $retry_count -lt $max_retries ]; do
 done
 
 echo "All input files verified successfully!"
-echo "Extracting ref_f3d and running prep_phydata_dbz.py in parallel for all members..."
+#cltorg echo "Extracting ref_f3d and running prep_phydata_dbz.py in parallel for all members..."
+echo "Extracting ref_f3d and running $pyname_prep_phydata_dbz in parallel for all members..."
 for imem in $(seq 1 $nens); do
   memcharv0="mem"$(printf %03i $imem)
-  echo "ncks -O -v ref_f3d data/inputs/${memcharv0}/phy_data.nc data/inputs/${memcharv0}/phy_data.nc_prepdbz > prep_phydata_${memcharv0}.log 2>&1 && python prep_phydata_dbz.py data/inputs/${memcharv0}/phy_data.nc_prepdbz >> prep_phydata_${memcharv0}.log 2>&1"
+#cltorg  echo "ncks -O -v ref_f3d data/inputs/${memcharv0}/phy_data.nc data/inputs/${memcharv0}/phy_data.nc_prepdbz > prep_phydata_${memcharv0}.log 2>&1 && python prep_phydata_dbz.py data/inputs/${memcharv0}/phy_data.nc_prepdbz >> prep_phydata_${memcharv0}.log 2>&1"
+  echo "ncks -O -v ref_f3d data/inputs/${memcharv0}/phy_data.nc data/inputs/${memcharv0}/phy_data.nc_prepdbz > prep_phydata_${memcharv0}.log 2>&1 && python ${pyname_prep_phydata_dbz} data/inputs/${memcharv0}/phy_data.nc_prepdbz >> prep_phydata_${memcharv0}.log 2>&1"
 done | parallel -j 30 --halt soon,fail=1
 echo "phy_data.nc preprocessing completed successfully!!!"
 
@@ -266,14 +276,16 @@ cp ${FIX_JEDI}/field_table .
 cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/fmsmpp.nml .
 #cp ${FIX_JEDI}/${PREDEF_GRID_NAME}/input_lam* .
 cp ${fixsimple}/3kmNA_p1936_input.nml ./INPUT/
-cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml}  HybridVar-jedi.yaml 
+#cltorg-20260913-cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml}  HybridVar-jedi.yaml 
+cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936-rr.yaml}  HybridVar-jedi.yaml 
 mkdir -p dr-mgbf-fix
 cp ${fixsimple}/dr-mgbf/norm*p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-sdl_vdl_v1_init-p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-dbz-1G-2var_group_p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-non_dbz-6var_group_p1936.nml ./dr-mgbf-fix/
 
-cp ${fixsimple}/gsiparm_regional.anl .
+#cltorg cp ${fixsimple}/gsiparm_regional.anl .
+cp ${fixsimple}/dbz-gsiparm_regional.anl gsiparm_regional.anl 
 cp ${fixsimple}/fv3_grid_spec .
 cp ${fixsimple}/berror_stats .
 

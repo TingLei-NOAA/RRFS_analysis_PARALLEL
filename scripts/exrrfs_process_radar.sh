@@ -24,6 +24,7 @@ pgmout=${mrmsdir}/pgm.log
 #############################
 
 rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow  #cltthinkdeb
+rrfsworkflow_tl=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rrfs-workflow-fork/rrfs-workflow  #cltthinkdeb
 source ${rrfsworkflow}/versions/run.ver
 set +x
 module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
@@ -235,7 +236,11 @@ EOF
    set -euox pipefail
    PYIODALIB=$(echo "${RDASApp}"/build/lib/python3.*)
    export PYTHONPATH=${PYIODALIB}:${PYTHONPATH}
-   "${rrfsworkflow}"/ush/MRMS2ioda.py -i ./Gridded_ref.nc -c "${YYYY}-${MM}-${DD}T${HH}:${bigmin}:00" -o "ioda_mrms_${YYYYMMDD}${HH}_${bigmin}.nc4"
+   if [ ${l_enforce_zero_lower_bounds:-TRUE} = TRUE ]; then
+   "${rrfsworkflow_tl}"/ush/MRMS2ioda.py -i ./Gridded_ref.nc -c "${YYYY}-${MM}-${DD}T${HH}:${bigmin}:00" -o "ioda_mrms_${YYYYMMDD}${HH}_${bigmin}.nc4"
+   else
+   "${rrfsworkflow_tl}"/ush/MRMS2ioda_control.py -i ./Gridded_ref.nc -c "${YYYY}-${MM}-${DD}T${HH}:${bigmin}:00" -o "ioda_mrms_${YYYYMMDD}${HH}_${bigmin}.nc4"
+   fi
 
    # file count sanity check and copy to COMOUT
    if [[ -s "ioda_mrms_${YYYYMMDD}${HH}_${bigmin}.nc4" ]]; then
