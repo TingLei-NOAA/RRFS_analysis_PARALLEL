@@ -33,7 +33,8 @@ set +x
 #source ${rrfsworkflow}/versions/run.ver
 #module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
 #module load run_enkfupdt_jedi.local
-jedi_bundle=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-jedi-bundle/jedi-bundle
+#cltorg jedi_bundle=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-jedi-bundle/jedi-bundle
+jedi_bundle=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-jedi-bundle-dev/jedi-bundle
 #cltorg rdasapp_build_dir="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/build"
 moduledir="/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp/modulefiles"
 module use $moduledir
@@ -264,7 +265,8 @@ cp ${mrmsdir}/00/ioda_mrms_${YYYYMMDD}${HH}_00.nc4 data/obs/ioda_mrms_refl.nc
 #
 echo "thinkdeb " `pwd`
 mkdir -p INPUT
-FIXLAM=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow/fix/lam/RRFS_NA_3km
+#clt FIXLAM=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow/fix/lam/RRFS_NA_3km
+FIXLAM=${rrfsworkflow}/fix/lam/RRFS_NA_3km
 ln -snf ${FIXLAM}/${CRES}_grid.tile7.halo3.nc INPUT/${CRES}_grid.tile7.halo3.nc
 ln -snf ${FIXLAM}/${CRES}_grid.tile7.halo3.nc INPUT/${CRES}_grid.tile7.nc
 ln -snf ${FIXLAM}/${CRES}_mosaic.halo3.nc INPUT/grid_spec.nc
@@ -279,7 +281,7 @@ cp ${fixsimple}/3kmNA_p1936_input.nml ./INPUT/
 #cltorg-20260913-cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml}  HybridVar-jedi.yaml 
 cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936-rr.yaml}  HybridVar-jedi.yaml 
 mkdir -p dr-mgbf-fix
-cp ${fixsimple}/dr-mgbf/norm*p1936.nml ./dr-mgbf-fix/
+cp ${fixsimple}/dr-mgbf/filt*norm*p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-sdl_vdl_v1_init-p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-dbz-1G-2var_group_p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-non_dbz-6var_group_p1936.nml ./dr-mgbf-fix/

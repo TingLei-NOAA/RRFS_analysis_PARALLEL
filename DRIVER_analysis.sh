@@ -23,7 +23,7 @@ getkfyaml=/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-atmosphe
 #cltorg rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
 rrfspath=/lfs/h1/ops/prod/com/rrfs/v1.0
 reflpath=/lfs/h1/ops/prod/dcom/ldmdata/obs/upperair/mrms/conus/MergedReflectivityQC
-obsbase=/lfs/h1/ops/prod/com/obsproc/v1.2
+obsbase=/lfs/h1/ops/prod/com/obsproc/v1.3
 
 #############################
 ### Begin executable code ###

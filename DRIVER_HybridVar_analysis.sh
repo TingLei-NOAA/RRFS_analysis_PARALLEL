@@ -14,7 +14,7 @@ set -euo pipefail
 # Paths to local installs
 RDASApp=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rdasapp/RDASApp
 #cltcactus  rrfsworkflow=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-fork-fv3jedi-workflow/rrfs-workflow
-rrfsworkflow=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rrfs-workflow-fork/rrfs-workflow
+rrfsworkflow=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-fork-fv3jedi-workflow/rrfs-workflow
 baserundir=/lfs/h2/emc/stmp/${USER}/3DVarAnalysis_PARALLEL
 
 # GETKF config
@@ -26,7 +26,7 @@ HybridVaryaml=xxx/lfs/h2/emc/da/noscrub/samuel.degelia/parallel_getkf/fix/rdas-a
 #cltorg rrfspath=/lfs/h1/ops/para/com/rrfs/v1.0
 rrfspath=/lfs/h1/ops/prod/com/rrfs/v1.0
 reflpath=/lfs/h1/ops/prod/dcom/ldmdata/obs/upperair/mrms/conus/MergedReflectivityQC
-obsbase=/lfs/h1/ops/prod/com/obsproc/v1.2
+obsbase=/lfs/h1/ops/prod/com/obsproc/v1.3
 
 #############################
 ### Begin executable code ###
@@ -268,6 +268,7 @@ cp "${job_envfile}" ${anldir}
 cp "${job_envfile}" ${verifdir}
 cp ./scripts/prep_ioda_cast.sh ${bufrdir}
 cp ./scripts/prep_phydata_dbz.py ${anldir}
+cp ./scripts/prep_phydata_dbz_control.py ${anldir}
 cp ./scripts/apply_jedi_incs.sh ${verifdir}
 
 source_cycle="${enspath%/}"

@@ -13,7 +13,8 @@ FIX_JEDI=${rrfsworkflow}/fix/jedi
 FIX_GSI=${rrfsworkflow}/fix/gsi
 PREDEF_GRID_NAME=RRFS_NA_3km
 #RDASAPP=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp
-RDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_fv3io_dwind/RDASApp
+#cltRDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_fv3io_dwind/RDASApp
+RDASApp=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_current/RDASApp
 RDASAPP_DIR=${RDASApp}
 #RDASAPP_DIR=/lfs/h2/emc/da/noscrub/samuel.degelia/RDASApp_redist_iodafix/RDASApp
 PARM_IODACONV=${rrfsworkflow}/parm/iodaconv
@@ -30,7 +31,7 @@ set +x
 module reset 
 #cltorg source ${rrfsworkflow}/versions/run.ver
 #cltorg
-rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow
+#cltorg rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow
 source ${rrfsworkflow}/versions/run.ver
 module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
 module load run_ioda_bufr.local

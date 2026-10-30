@@ -154,13 +154,17 @@ cost function:
           active variables:
           - eastward_wind
           - northward_wind
-          - virtual_temperature
+          - air_temperature
           - water_vapor_mixing_ratio_wrt_moist_air
           - air_pressure_at_surface
+          - cloud_liquid_water
+          - cloud_liquid_ice
           - rain_water
           - snow_water
           - graupel
           - equivalent_reflectivity_factor
+
+
           read:
             gsi akbk: fv3_akbk
             gsi error covariance file: berror_stats
@@ -215,7 +219,7 @@ cost function:
           input variables:
           - eastward_wind
           - northward_wind
-          - virtual_temperature
+          - air_temperature
           - water_vapor_mixing_ratio_wrt_moist_air
           - air_pressure_at_surface
           - cloud_liquid_ice
@@ -270,9 +274,17 @@ cost function:
           zero padding: 3
         localization:
           localization method: SABER
+          # The group sum is done by the SABER "duplicate variables" outer block instead of
+          # MGBF l_loc_filter_once, so MGBF sees 2 fields (one per group, 65 levels each),
+          # not 11. The init nml is the filt_once-norm-dbz one with: group nmls km3 = 1 and
+          # no l_loc_filter_once line, readin_ivargroup = 1,2.
           saber central block:
             saber block name: MGBF_covariance
-            mgbf sdl and vdl init namelist file: dr-mgbf-fix/norm-dbz_vdl_v1_init-p1936.nml
+            mgbf sdl and vdl init namelist file: dr-mgbf-fix/dupvar-norm-dbz_vdl_v1_init-p1936.nml
+          # Outer blocks: LAST entry is outermost (model side). So the order of operations
+          # in B_loc is: duplicate variables AD (sum 11 -> 2 fields on the model grid)
+          # -> interpolation AD (2 fields) -> MGBF -> interpolation -> duplicate variables
+          # (copy each group field back to its members).
           saber outer blocks:
           -  saber block name: interpolation
              inner geometry:
@@ -305,6 +317,27 @@ cost function:
              inverse interpolator:
                  local interpolator type: oops unstructured grid interpolator
                  regional check enabled: false
+          -  saber block name: duplicate variables
+             # Group order = MGBF group order (readin_mgbf_nml_group 1, 2).
+             # Every analysis variable must be listed: an unlisted one would pass through
+             # and be localized on its own. Surface pressure (1 level) is added into the
+             # bottom (last) level, as in filter-once.
+             variable groupings:
+             - group variable name: dupvar_group_1
+               group components:
+               - equivalent_reflectivity_factor
+               - cloud_liquid_water
+               - cloud_liquid_ice
+               - rain_water
+               - snow_water
+               - graupel
+             - group variable name: dupvar_group_2
+               group components:
+               - eastward_wind
+               - northward_wind
+               - air_temperature
+               - water_vapor_mixing_ratio_wrt_moist_air
+               - air_pressure_at_surface
       weight:
         value: 0.8
 

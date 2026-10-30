@@ -23,8 +23,10 @@ pgmout=${mrmsdir}/pgm.log
 ### Begin executable code ###
 #############################
 
-rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow  #cltthinkdeb
-rrfsworkflow_tl=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rrfs-workflow-fork/rrfs-workflow  #cltthinkdeb
+#clt rrfsworkflow=/lfs/h2/emc/da/noscrub/samuel.degelia/rrfs-workflow_onestep/rrfs-workflow  #cltthinkdeb
+#clt dogwood rrfsworkflow_tl=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-rrfs-workflow-fork/rrfs-workflow  #cltthinkdeb
+#cltdog rrfsworkflow_tl=/lfs/h2/emc/da/noscrub/Ting.Lei/dr-fork-fv3jedi-workflow  #cltthinkdeb
+rrfsworkflow_tl=$rrfsworkflow  #/lfs/h2/emc/da/noscrub/Ting.Lei/dr-fork-fv3jedi-workflow  #cltthinkdeb
 source ${rrfsworkflow}/versions/run.ver
 set +x
 module use ${rrfsworkflow}/modulefiles/tasks/wcoss2
