@@ -281,7 +281,9 @@ cp ${fixsimple}/3kmNA_p1936_input.nml ./INPUT/
 #cltorg-20260913-cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936.yaml}  HybridVar-jedi.yaml 
 cp ${fixsimple}/dr-mgbf/${example:-example-hyb-vdl_v1-p1936-rr.yaml}  HybridVar-jedi.yaml 
 mkdir -p dr-mgbf-fix
-cp ${fixsimple}/dr-mgbf/filt*norm*p1936.nml ./dr-mgbf-fix/
+cp ${fixsimple}/dr-mgbf/dup**norm*p1936.nml ./dr-mgbf-fix/
+cp ${fixsimple}/dr-mgbf/*1var*p1936.nml ./dr-mgbf-fix/
+#cp ${fixsimple}/dr-mgbf/filt*norm*p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-sdl_vdl_v1_init-p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-dbz-1G-2var_group_p1936.nml ./dr-mgbf-fix/
 #cp ${fixsimple}/dr-mgbf/norm-non_dbz-6var_group_p1936.nml ./dr-mgbf-fix/
